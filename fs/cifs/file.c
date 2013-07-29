@@ -639,6 +639,7 @@ cifs_reopen_file(struct cifsFileInfo *cfile, bool can_flush)
 				     oflags, &oplock, &fid.netfid, xid);
 		if (rc == 0) {
 			cifs_dbg(FYI, "posix reopen succeeded\n");
+			oparms.reconnect = true;
 			goto reopen_success;
 		}
 		/*
