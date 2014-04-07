@@ -20,31 +20,7 @@
 #include <linux/syscalls.h>
 #include <linux/file.h>
 
-unsigned long max_readahead_pages = VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE;
-
-static int __init readahead(char *str)
-{
-	unsigned long bytes;
-	if (!str)
-	return -EINVAL;
-	bytes = memparse(str, &str);
-	if (*str != '\0')
-	return -EINVAL;
-
-	if (bytes) {
-		if (bytes < PAGE_CACHE_SIZE)	/* missed 'k'/'m' suffixes? */
-		return -EINVAL;
-
-		if (bytes > 256 << 20)	/* limit to 256MB */
-		bytes = 256 << 20;
-	}
-
-	max_readahead_pages = bytes / PAGE_CACHE_SIZE;
-	default_backing_dev_info.ra_pages = max_readahead_pages;
-	return 0;
-}
-
-early_param("readahead", readahead);
+#include "internal.h"
 
 /*
  * Initialise a struct file's readahead state.  Assumes that the caller has
@@ -175,8 +151,7 @@ out:
  *
  * Returns the number of pages requested, or the maximum amount of I/O allowed.
  */
-static int
-__do_page_cache_readahead(struct address_space *mapping, struct file *filp,
+int __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
 			pgoff_t offset, unsigned long nr_to_read,
 			unsigned long lookahead_size)
 {
@@ -225,6 +200,9 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
 #endif
 
 		page->index = page_offset;
+
+		page->flags |= (1L << PG_readahead);
+
 		list_add(&page->lru, &page_pool);
 		if (page_idx == nr_to_read - lookahead_size)
 			SetPageReadahead(page);
@@ -302,6 +280,8 @@ unsigned long ra_submit(struct file_ra_state *ra,
 
 /*
  * Set the initial window size, round to next power of 2 and square
+ * Small size is not dependant on max value - only a one-page read is regarded
+ * as small.
  * for small size, x 4 for medium, and x 2 for large
  * for 128k (32 page) max ra
  * 1-8 page = 32k initial, > 8 page = 128k initial
@@ -310,7 +290,7 @@ static unsigned long get_init_ra_size(unsigned long size, unsigned long max)
 {
 	unsigned long newsize = roundup_pow_of_two(size);
 
-	if (newsize <= max / 32)
+	if (newsize <= 1)
 		newsize = newsize * 4;
 	else if (newsize <= max / 4)
 		newsize = newsize * 2;
@@ -410,10 +390,10 @@ static int try_context_readahead(struct address_space *mapping,
 	size = count_history_pages(mapping, ra, offset, max);
 
 	/*
-	 * no history pages:
+	 * not enough history pages:
 	 * it could be a random read
 	 */
-	if (!size <= req_size)
+	if (size <= req_size)
 		return 0;
 
 	/*
