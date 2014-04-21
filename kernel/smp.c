@@ -2,6 +2,7 @@
  * Generic helpers for smp ipi calls
  *
  * (C) Jens Axboe <jens.axboe@oracle.com> 2008
+ * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
  */
 #include <linux/irq_work.h>
 #include <linux/rcupdate.h>
@@ -15,6 +16,7 @@
 #include <linux/cpu.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/smp.h>
+#include <linux/sched.h>
 #include <asm/relaxed.h>
 
 #include "smpboot.h"
