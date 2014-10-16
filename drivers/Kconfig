@@ -179,6 +179,8 @@ source "drivers/battery/Kconfig"
 
 source "drivers/reset/Kconfig"
 
+source "drivers/android/Kconfig"
+
 source "drivers/sensorhub/stm/Kconfig"
 
 source "drivers/sensorhub/atmel/Kconfig"
