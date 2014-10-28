@@ -1,81 +1,60 @@
 /*
- * Copyright (C) 2012 ARM Ltd.
+ * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 #include <linux/linkage.h>
 #include <asm/assembler.h>
-#include <asm/cache.h>
 
-/*
- * Copy from user space to a kernel buffer (alignment handled by the hardware)
- *
- * Parameters:
- *	x0 - to
- *	x1 - from
- *	x2 - n
- * Returns:
- *	x0 - bytes not copied
- */
+/* Parameters */
+dstin	.req	x0
+src	.req	x1
+count	.req	x2
 
-	.macro ldrb1 ptr, regB, val
-	USER(9998f, ldrb  \ptr, [\regB], \val)
-	.endm
+/* Return value */
+ret_val	.req	x0	/* Aliased with dstin */
 
-	.macro strb1 ptr, regB, val
-	strb \ptr, [\regB], \val
-	.endm
+/* Local version of dstin */
+dst	.req	x3
+last_src .req	x5
 
-	.macro ldrh1 ptr, regB, val
-	USER(9998f, ldrh  \ptr, [\regB], \val)
-	.endm
 
-	.macro strh1 ptr, regB, val
-	strh \ptr, [\regB], \val
-	.endm
+#define LOAD_USER( offset, x...)		\
+9999:	x;					\
+	.section __ex_table,"a";		\
+	.align	3;				\
+	.quad	9999b, load_fixup ## offset;	\
+	.previous
 
-	.macro ldr1 ptr, regB, val
-	USER(9998f, ldr \ptr, [\regB], \val)
-	.endm
+#define STORE_USER(offset, x...) x
 
-	.macro str1 ptr, regB, val
-	str \ptr, [\regB], \val
-	.endm
-
-	.macro ldp1 ptr, regB, regC, val
-	USER(9998f, ldp \ptr, \regB, [\regC], \val)
-	.endm
-
-	.macro stp1 ptr, regB, regC, val
-	stp \ptr, \regB, [\regC], \val
-	.endm
-
-end	.req	x5
 ENTRY(__copy_from_user)
-	add	end, x0, x2
-#include "copy_template.S"
-	mov	x0, #0				// Nothing to copy
-	ret
+	mov	dst, dstin
+	add	last_src, src, count
+	mov	ret_val, #0
+#include "memcpy_base.h"
 ENDPROC(__copy_from_user)
 
 	.section .fixup,"ax"
 	.align	2
-9998:
-	sub	x0, end, dst
-9999:
-	strb	wzr, [dst], #1			// zero remaining buffer space
-	cmp	dst, end
-	b.lo	9999b
+9:	sub	x2, x4, x1
+	mov	x3, x2
+10:	strb	wzr, [x0], #1			// zero remaining buffer space
+	subs	x3, x3, #1
+	b.ne	10b
+	mov	x0, x2				// bytes not copied
 	ret
 	.previous
