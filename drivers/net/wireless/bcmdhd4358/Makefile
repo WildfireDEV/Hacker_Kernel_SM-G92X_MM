@@ -123,6 +123,7 @@ DHDCFLAGS += -DDISABLE_11H_SOFTAP
 DHDCFLAGS += -DSUPPORT_PM2_ONLY
 DHDCFLAGS += -DSUPPORT_DEEP_SLEEP
 DHDCFLAGS += -DSUPPORT_AMPDU_MPDU_CMD
+DHDCFLAGS += -DBLOCK_IPV6_PACKET -DPASS_IPV4_SUSPEND
 DHDCFLAGS += -DSOFTAP_SEND_HANGEVT
 DHDCFLAGS += -DTDLS_MSG_ONLY_WFD
 DHDCFLAGS += -DSKIP_WLFC_ON_CONCURRENT
@@ -131,6 +132,9 @@ DHDCFLAGS += -DCUSTOM_KEEP_ALIVE_SETTING=30000
 
 # For special PNO Event keep wake lock for 10sec
 DHDCFLAGS += -DCUSTOM_PNO_EVENT_LOCK_xTIME=10
+
+# For Passing all multicast packets to host when not in suspend mode.
+# DHDCFLAGS += -DPASS_ALL_MCAST_PKTS
 
 # Early suspend
 DHDCFLAGS += -DDHD_USE_EARLYSUSPEND
@@ -149,13 +153,16 @@ ifeq ($(CONFIG_BROADCOM_WIFI_RESERVED_MEM),y)
   DHDCFLAGS += -DENHANCED_STATIC_BUF
   DHDCFLAGS += -DSTATIC_WL_PRIV_STRUCT
 ifeq ($(BUS_IFACE_PCIE),y)
-  # Use preallocated IOCTL and EVENT buffer
-  DHDCFLAGS += -DDHD_USE_STATIC_CTRLBUF
+  DHDCFLAGS += -DDHD_USE_STATIC_IOCTLBUF
 endif
-ifeq ($(CONFIG_BCMDHD_PREALLOC_MEMDUMP),y)
-  DHDCFLAGS += -DDHD_USE_STATIC_MEMDUMP
+ifeq ($(CONFIG_BCMDHD_DEBUG_PAGEALLOC),y)
+# Preallocation for memory dump
+  DHDCFLAGS += -DUSE_STATIC_MEMDUMP
 endif
 endif
+
+# DTIM listen interval in suspend mode(0 means follow AP's DTIM period)
+DHDCFLAGS += -DCUSTOM_SUSPEND_BCN_LI_DTIM=3
 
 # Ioctl timeout 5000ms
 DHDCFLAGS += -DIOCTL_RESP_TIMEOUT=5000
@@ -199,7 +206,7 @@ DHDCFLAGS += -DUSE_WFA_CERT_CONF
 # Definitions are filtered by Kernel version
 DHDCFLAGS += -DWL_ENABLE_P2P_IF
 DHDCFLAGS += -DWL_SUPPORT_BACKPORTED_KPATCHES
-# Default definitions for KitKat, Lollipop
+# Default definitions for KitKat THIS_STRING_WILL_BE_REPLACED_WITH_ANDROID_DEFINITION Lollipop
 DHDCFLAGS += -DWL_CFG80211_STA_EVENT
 DHDCFLAGS += -DWL_IFACE_COMB_NUM_CHANNELS
 # To support p2p private command on kernel 3.8 or above
@@ -248,7 +255,7 @@ ifneq ($(CONFIG_BCM4358),)
   DHDCFLAGS += -DUSE_CID_CHECK
   DHDCFLAGS += -DENABLE_BCN_LI_BCN_WAKEUP
   DHDCFLAGS += -DDHD_DONOT_FORWARD_BCMEVENT_AS_NETWORK_PKT
-  DHDCFLAGS += -DCUSTOM_BCN_TIMEOUT=6
+  DHDCFLAGS += -DCUSTOM_BCN_TIMEOUT=4
   DHDCFLAGS += -DSOFTAP_UAPSD_OFF
 # tput enhancement for common
   DHDCFLAGS += -DUSE_WL_TXBF
@@ -293,6 +300,7 @@ endif
 
 ifeq ($(CONFIG_ARCH_MSM),y)
   DHDCFLAGS += -DSET_RPS_CPUS
+  DHDCFLAGS := $(filter-out -DDHDTCPACK_SUPPRESS,$(DHDCFLAGS))
 endif
 
 # New Features
@@ -303,7 +311,7 @@ endif
   DHDCFLAGS += -DWLTDLS
   DHDCFLAGS += -DWLFBT
   DHDCFLAGS += -DDHD_ENABLE_LPC
-  DHDCFLAGS += -DWLAIBSS -DWLAIBSS_PS
+  DHDCFLAGS += -DWLAIBSS
   DHDCFLAGS += -DSUPPORT_LTECX
   DHDCFLAGS += -DSUPPORT_2G_VHT
   DHDCFLAGS += -DSUPPORT_WL_TXPOWER
@@ -409,7 +417,7 @@ endif
   DHDCFLAGS += -DCUSTOM_MAX_TXGLOM_SIZE=32
 
   # New Features
-  DHDCFLAGS += -DWL11U -DMFP
+  DHDCFLAGS += -DWL11U
   DHDCFLAGS += -DBCMCCX
   DHDCFLAGS += -DWES_SUPPORT
   DHDCFLAGS += -DOKC_SUPPORT
@@ -459,7 +467,7 @@ endif
   DHDCFLAGS += -DCUSTOM_MAX_TXGLOM_SIZE=32
 
   # New Features
-  DHDCFLAGS += -DWL11U -DMFP
+  DHDCFLAGS += -DWL11U
   DHDCFLAGS += -DBCMCCX
   DHDCFLAGS += -DWES_SUPPORT
   DHDCFLAGS += -DOKC_SUPPORT
@@ -630,7 +638,7 @@ DHDOFILES := dhd_pno.o dhd_common.o dhd_ip.o dhd_custom_gpio.o dhd_custom_sec.o 
 	bcmutils.o bcmwifi_channels.o hndpmu.o linux_osl.o sbutils.o siutils.o \
 	wl_android.o wl_cfg80211.o wl_cfgp2p.o wl_cfg_btcoex.o wldev_common.o \
 	wl_linux_mon.o wl_roam.o dhd_linux_platdev.o dhd_linux_wq.o wl_cfg_btcoex.o \
-	hnd_pktq.o hnd_pktpool.o
+	hnd_pktq.o hnd_pktpool.o wl_cfgnan.o bcmxtlv.o
 
 
 ifeq ($(BUS_IFACE_SDIO),y)
