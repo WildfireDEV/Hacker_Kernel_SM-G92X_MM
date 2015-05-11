@@ -753,10 +753,10 @@ static void cpufreq_interactive_timer(unsigned long data)
 	}
 #endif
 
-	if (screen_is_on
+	if (suspended
  		&& tunables->timer_rate != tunables->prev_timer_rate)
  		tunables->timer_rate = tunables->prev_timer_rate;
- 	else if (!screen_is_on
+ 	else if (!suspended
  		&& tunables->timer_rate != SCREEN_OFF_TIMER_RATE) {
 		tunables->prev_timer_rate = tunables->timer_rate;
 		tunables->timer_rate
