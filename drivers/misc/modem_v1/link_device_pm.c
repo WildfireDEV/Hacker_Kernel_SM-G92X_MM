@@ -48,7 +48,7 @@ static inline void print_pm_event(struct modem_link_pm *pm, enum pm_event event)
 	PM {cp2ap_wakeup:ap2cp_wakeup:cp2ap_status:ap2cp_status}{event:state}
 	   <CALLER>
 	*/
-	mif_info("%s: PM {%d:%d:%d:%d}{%s:%s}\n", pm->link_name,
+	pr_debug("%s: PM {%d:%d:%d:%d}{%s:%s}\n", pm->link_name,
 		cp2ap_wakeup, ap2cp_wakeup, cp2ap_status, ap2cp_status,
 		pm_event2str(event), pm_state2str(pm->fsm.state));
 }
@@ -70,7 +70,7 @@ static inline void print_pm_fsm(struct modem_link_pm *pm)
 	PM {cp2ap_wakeup:ap2cp_wakeup:cp2ap_status:ap2cp_status}\
 	   {event:current_state->next_state} <CALLER>
 	*/
-	mif_info("%s: PM {%d:%d:%d:%d}{%s:%s->%s}\n", pm->link_name,
+	pr_debug("%s: PM {%d:%d:%d:%d}{%s:%s->%s}\n", pm->link_name,
 		cp2ap_wakeup, ap2cp_wakeup, cp2ap_status, ap2cp_status,
 		pm_event2str(pm->fsm.event), pm_state2str(pm->fsm.prev_state),
 		pm_state2str(pm->fsm.state));
@@ -501,7 +501,7 @@ static void run_pm_fsm(struct modem_link_pm *pm, enum pm_event event)
 			cancel_cp_free(pm);
 			assert_ap2cp_wakeup(pm);
 		} else if (event == PM_EVENT_CP_HOLD_REQUEST) {
-			n_state = PM_STATE_ACTIVE;
+			n_state = PM_STATE_AP_FREE;
 			cancel_cp_free(pm);
 			assert_ap2cp_wakeup(pm);
 			schedule_cp_free(pm);
@@ -512,8 +512,7 @@ static void run_pm_fsm(struct modem_link_pm *pm, enum pm_event event)
 			So, cp2ap_wakeup must always be checked before state
 			transition.
 			*/
-			if (!gpio_get_value(pm->gpio_cp2ap_wakeup) &&
-					!atomic_read(&pm->ref_cnt)) {
+			if (!gpio_get_value(pm->gpio_cp2ap_wakeup)) {
 				n_state = PM_STATE_CP_FREE;
 				pm->hold_requested = false;
 				release_ap2cp_wakeup(pm);
@@ -650,10 +649,9 @@ static irqreturn_t cp2ap_status_handler(int irq, void *data)
 	struct link_device *ld = pm_to_link_device(pm);
 	struct mem_link_device *mld = ld_to_mem_link_device(ld);
 
-	if (cp2ap_status) {
+	if (cp2ap_status)
 		run_pm_fsm(pm, PM_EVENT_CP2AP_STATUS_HIGH);
-		wake_up_all(&mld->wq);
-	} else {
+	else
 		run_pm_fsm(pm, PM_EVENT_CP2AP_STATUS_LOW);
 	}
 
