@@ -1219,6 +1219,20 @@ config CC_OPTIMIZE_FOR_SIZE
 
 	  If unsure, say N.
 
+config WITH_CCACHE
+	bool "Built with ccache"
+	help
+	  Enabling this option for building kernel with ccache.
+
+	  If unsure, say N.
+
+config WITH_GRAPHITE
+	bool "Built with graphite optimizations"
+	help
+	  Enabling this option for building kernel with cgraphite optimizations.
+
+	  If unsure, say N.
+	  
 config SYSCTL
 	bool
 
