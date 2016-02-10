@@ -901,10 +901,8 @@ source "drivers/input/touchscreen/synaptics_dsx/Kconfig"
 source "drivers/input/touchscreen/synaptics_dsx2/Kconfig"
 source "drivers/input/touchscreen/stm/Kconfig"
 source "drivers/input/touchscreen/stm/fts5ad56/Kconfig"
-<<<<<<< HEAD
 source "drivers/input/touchscreen/sec_ts/Kconfig"
 source "drivers/input/touchscreen/melfas_mms400/Kconfig"
-=======
 
 config TOUCHSCREEN_DOUBLETAP2WAKE
 	tristate "DoubleTap2Wake for touchscreens"
@@ -916,5 +914,4 @@ config TOUCHSCREEN_PREVENT_SLEEP
 	default n
 	help
 	  This disables the sleep function of modified touchscreen drivers.
->>>>>>> 87df5be... D2W [Showp1984, Arter97 and everyone else who contributed to this]
 endif

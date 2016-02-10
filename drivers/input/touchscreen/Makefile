@@ -77,9 +77,6 @@ obj-$(CONFIG_TOUCHSCREEN_W90X900)	+= w90p910_ts.o
 obj-$(CONFIG_TOUCHSCREEN_TPS6507X)	+= tps6507x-ts.o
 obj-$(CONFIG_TOUCHSCREEN_FTS)		+= stm/
 obj-$(CONFIG_TOUCHSCREEN_FTS5AD56)		+= stm/fts5ad56/
-<<<<<<< HEAD
 obj-$(CONFIG_TOUCHSCREEN_SEC_TS)	+= sec_ts/
 obj-$(CONFIG_TOUCHSCREEN_MELFAS_MMS438)	+= melfas_mms400/
-=======
 obj-$(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)	+= doubletap2wake.o
->>>>>>> 87df5be... D2W [Showp1984, Arter97 and everyone else who contributed to this]
