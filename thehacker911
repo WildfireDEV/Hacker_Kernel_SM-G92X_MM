@@ -1,0 +1,21 @@
+#Name
+Hacker
+#Device
+-S6-Universal
+#Version
+-V13
+#Zip-Name
+hacker-kernel
+#Version
+-V13-WSM
+#Toolchain
+UBERTC-aarch64-linux-android-5.3/bin/aarch64-linux-android-
+#Su Version
+-su_266
+#Device
+-S6-Userbuild
+-g920f
+-g925f
+#UBERTC-aarch64-linux-android-6.0/bin/aarch64-linux-android-
+#
+#
