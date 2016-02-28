@@ -45,10 +45,10 @@ HACKER_VER_920F="$BASE_VER$DEVICE_VER_G920F$VER"
 HACKER_VER_920FWSM="$BASE_VER$DEVICE_VER_G920F$VERWSM"
 HACKER_VER_925F="$BASE_VER$DEVICE_VER_G925F$VER"
 HACKER_VER_925FWSM="$BASE_VER$DEVICE_VER_G925F$VERWSM"
-KERNEL_NAME_G920F="$ZIP_VER$HACKER_VER_920F$VER"
-KERNEL_NAME_WSM_G920F="$ZIP_VER$HACKER_VER_920F$VERWSM"
-KERNEL_NAME_G925F="$ZIP_VER$HACKER_VER_925F$VER"
-KERNEL_NAME_WSM_G925F="$ZIP_VER$HACKER_VER_925F$VERWSM"
+KERNEL_NAME_G920F="$ZIP_VER$DEVICE_VER_G920F$VER"
+KERNEL_NAME_WSM_G920F="$ZIP_VER$DEVICE_VER_G920F$VERWSM"
+KERNEL_NAME_G925F="$ZIP_VER$DEVICE_VER_G925F$VER"
+KERNEL_NAME_WSM_G925F="$ZIP_VER$DEVICE_VER_G925F$VERWSM"
 RAMDISK=$BI_DIR/boot/ramdisk
 PATCH=$KERNEL_DIR/build/patch;
 
@@ -77,6 +77,11 @@ CLEAN()
 
 CLEANCONFIG()
 {
+	echo ""
+	echo "=============================================="
+	echo "START: CLEAN CONFIG"
+	echo "=============================================="
+	echo ""
 	remove_line() {
 	if [ ! -z "$(grep "$2" $1)" ]; then
 		line=`grep -n "$2" $1 | cut -d: -f1`;
@@ -112,7 +117,11 @@ remove_line $CONFIG_DIR/$CONFIG "CONFIG_PM_SLEEP_DEBUG=y";
 remove_line $CONFIG_DIR/$CONFIG "# CONFIG_PM_DEBUG is not set";
 remove_line $CONFIG_DIR/$CONFIG "CONFIG_HAVE_64BIT_ALIGNED_ACCESS=y";
 remove_line $CONFIG_DIR/$CONFIG "# CONFIG_SCHED_HMP_LITTLE_PACKING is not set";
-
+	echo ""
+	echo "=============================================="
+	echo "END: CLEAN CONFIG"
+	echo "=============================================="
+	echo ""
 }
 
 BUILD_BASE()
@@ -147,6 +156,11 @@ SOUND_BASE_CLEAN()
 
 PATCH_RAMDISK()
 {
+	echo ""
+	echo "=============================================="
+	echo "START: PATCH RAMDISK"
+	echo "=============================================="
+	echo ""
 	sleep 1
 	CLEANCONFIG
 	sleep 1
@@ -310,7 +324,11 @@ PATCH_RAMDISK()
 	chmod 755 sys
 	chmod 755 system
 	cd $KERNEL_DIR
-
+	echo ""
+	echo "=============================================="
+	echo "END: PATCH RAMDISK"
+	echo "=============================================="
+	echo ""
 }
 
 WITHSOUNDMOD()
