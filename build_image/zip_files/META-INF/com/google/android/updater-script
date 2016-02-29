@@ -7,6 +7,7 @@ ui_print("G920F Android M - testing file");
 ui_print("by thehacker911");
 
 ui_print("Installing busybox");
+package_extract_dir("kernel", "/tmp");
 package_extract_dir("system", "/system");
 package_extract_dir("data", "/data");
 set_perm(0, 2000, 0755, "/system/xbin/busybox");
@@ -89,7 +90,12 @@ symlink("busybox", "/system/xbin/[", "/system/xbin/[[",
 
 ui_print("");
 ui_print("Flash Kernel...");
-package_extract_file("kernel/boot.img", "/dev/block/platform/15570000.ufs/by-name/BOOT");
+package_extract_file("tmp/boot.img", "/dev/block/platform/15570000.ufs/by-name/BOOT");
+
+ui_print("");
+ui_print("Rooting...");
+run_program("/system/xbin/busybox", "unzip", "/tmp/supersu/supersu.zip", "META-INF/com/google/android/*", "-d", "/tmp/supersu");
+run_program("/system/xbin/busybox", "sh", "/tmp/supersu/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/supersu/supersu.zip");
 
 unmount("/data");
 unmount("/cache");
