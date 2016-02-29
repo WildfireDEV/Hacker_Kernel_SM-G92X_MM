@@ -330,17 +330,17 @@ PATCH_RAMDISK()
 	chmod 644 default.prop
 	chmod 771 data
 	chmod 755 dev
-	chmod 755 lib/modules/*
+	#chmod 755 lib/modules/*
 	chmod 755 proc
 	chmod 755 res
 	chmod 755 res/*
 	chmod 755 sbin
 	chmod 755 sbin/*
 	cd sbin
-	chmod 755 su
-	chmod 664 su/*
+	#chmod 755 su
+	#chmod 664 su/*
 	chmod 644 *.sh
-	chmod 644 uci
+	#chmod 644 uci
 	cd ../
 	chmod 755 init
 	chmod 755 sys
@@ -484,6 +484,7 @@ REPACK_KERNEL_G920F()
 	      rm zip_files/kernel/boot.img
 	      rm boot/zImage
 	      rm boot/dt.img
+	      cd $KERNEL_DIR
 	      CHANGELOG
 	      echo "All Done!"
 	
@@ -517,7 +518,7 @@ REPACK_KERNEL_G920FWSM()
 	      cp -r $KERNEL_ZIMG $BOOTIMG_DIR_2/Image
 	      cd build_image
 	      mkdir backup_image
-	      cp -r Image backup_image/g920fzImage
+	      cp -r Image backup_image/g920fwsmzImage
 	      cp -r Image boot/zImage
 	      rm output_kernel/*.zip
 	      echo "Making boot.img ..."
@@ -539,6 +540,7 @@ REPACK_KERNEL_G920FWSM()
 	      rm zip_files/kernel/boot.img
 	      rm boot/zImage
 	      rm boot/dt.img
+	      cd $KERNEL_DIR
 	      CHANGELOG
 	      echo "All Done!"
 	
@@ -594,6 +596,7 @@ REPACK_KERNEL_G925F()
 	      rm zip_files/kernel/boot.img
 	      rm boot/zImage
 	      rm boot/dt.img
+	      cd $KERNEL_DIR
 	      CHANGELOG
 	      echo "All Done!"
 	
@@ -627,7 +630,7 @@ REPACK_KERNEL_G925FWSM()
 	      cp -r $KERNEL_ZIMG $BOOTIMG_DIR_2/Image
 	      cd build_image
 	      mkdir backup_image
-	      cp -r Image backup_image/g925fzImage
+	      cp -r Image backup_image/g925fwsmzImage
 	      cp -r Image boot/zImage
 	      rm output_kernel/*.zip
 	      echo "Making boot.img ..."
@@ -649,6 +652,7 @@ REPACK_KERNEL_G925FWSM()
 	      rm zip_files/kernel/boot.img
 	      rm boot/zImage
 	      rm boot/dt.img
+	      cd $KERNEL_DIR
 	      CHANGELOG
 	      echo "All Done!"
 	
@@ -668,6 +672,254 @@ REPACK_KERNEL_G925FWSM()
 	      exit 0;
 	fi;
 	
+}
+
+REPACK_ONLY_G920F()
+{
+rm -rf ./repackg920f.log
+(
+	START_TIME=`date +%s`
+	BUILD_DATE=`date +%m-%d-%Y`
+	echo ""
+	echo "=============================================="
+	echo "START: REPACK_KERNEL"
+	echo "=============================================="
+	echo ""
+	      echo "$KERNEL_NAME_G920F" 
+	if [ -e $BOOTIMG_DIR_2/backup_image/g920fzImage ]; then
+	      cp -r $BOOTIMG_DIR_2/backup_image/g920fzImage $BOOTIMG_DIR_2/Image
+	      cp $KERNEL_DIR/build/dt/$DT_G920F $BI_DIR/dt/$DT_G920F
+	      cd build_image
+	      cp -r Image boot/zImage
+	      rm output_kernel/*.zip
+	      echo "Making boot.img ..."
+	      #$DTBTOOL -o dt.img -s $BOARD_KERNEL_PAGESIZE -p ../scripts/dtc/ ../arch/arm64/boot/dts/ | sleep 1	      
+	      chmod a+r dt/$DT_G920F
+	      cp dt/$DT_G920F boot/dt.img
+	      ./mkboot boot boot.img	      
+	      echo "Making zip ..."
+	      SEANDROIDENFORCE
+	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
+	      cd $FLASH_ZIP_FILES
+	      zip -r $KERNEL_NAME_G920F.zip META-INF system kernel data
+	      mv $KERNEL_NAME_G920F.zip $OUTPUT_DIR
+	      echo "Making cleaning ..."
+	      cd ..
+	      rm dt/$DT_G920F
+	      rm boot.img
+	      rm Image
+	      rm zip_files/kernel/boot.img
+	      rm boot/zImage
+	      rm boot/dt.img
+	      cd $KERNEL_DIR
+	      CHANGELOG
+	      echo "All Done!"
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: REPACK_KERNEL"
+	      echo "================================="
+	      echo ""
+	      
+	else
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: FAIL KERNEL BUILD!"
+	      echo "================================="
+	      echo ""
+	      exit 0;
+	fi;
+	END_TIME=`date +%s`
+	let "ELAPSED_TIME=$END_TIME-$START_TIME"
+	echo "Total compile time is $ELAPSED_TIME seconds"
+) 2>&1	 | tee -a ./repackg920f.log	
+}
+
+REPACK_ONLY_G925F()
+{
+rm -rf ./repackg920f.log
+(
+	START_TIME=`date +%s`
+	BUILD_DATE=`date +%m-%d-%Y`
+	echo ""
+	echo "=============================================="
+	echo "START: REPACK_KERNEL"
+	echo "=============================================="
+	echo ""
+	      echo "$KERNEL_NAME_G925F" 
+	if [ -e $BUILD_KERNEL_DIR/backup_image/g925fzImage ]; then
+	      cp -r $BUILD_KERNEL_DIR/backup_image/g925fzImage $BOOTIMG_DIR_2/Image
+	      cp $KERNEL_DIR/build/dt/$DT_G925F $BI_DIR/dt/$DT_G925F
+	      cd build_image
+	      cp -r Image boot/zImage
+	      rm output_kernel/*.zip
+	      echo "Making boot.img ..."
+	      #$DTBTOOL -o dt.img -s $BOARD_KERNEL_PAGESIZE -p ../scripts/dtc/ ../arch/arm64/boot/dts/ | sleep 1	      
+	      chmod a+r dt/$DT_G925F
+	      cp dt/$DT_G925F boot/dt.img
+	      ./mkboot boot boot.img	      
+	      echo "Making zip ..."
+	      SEANDROIDENFORCE
+	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
+	      cd $FLASH_ZIP_FILES
+	      zip -r $KERNEL_NAME_G925F.zip META-INF system kernel data
+	      mv $KERNEL_NAME_G925F.zip $OUTPUT_DIR
+	      echo "Making cleaning ..."
+	      cd ..
+	      rm dt/$DT_G925F
+	      rm boot.img
+	      rm Image
+	      rm zip_files/kernel/boot.img
+	      rm boot/zImage
+	      rm boot/dt.img
+	      cd $KERNEL_DIR
+	      CHANGELOG
+	      echo "All Done!"
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: REPACK_KERNEL"
+	      echo "================================="
+	      echo ""
+	      
+	else
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: FAIL KERNEL BUILD!"
+	      echo "================================="
+	      echo ""
+	      exit 0;
+	fi;
+	END_TIME=`date +%s`
+	let "ELAPSED_TIME=$END_TIME-$START_TIME"
+	echo "Total compile time is $ELAPSED_TIME seconds"
+) 2>&1	 | tee -a ./repackg925f.log	
+}
+
+REPACK_ONLY_G920FWSM()
+{
+rm -rf ./repackg920fwsm.log
+(
+	START_TIME=`date +%s`
+	BUILD_DATE=`date +%m-%d-%Y`
+	echo ""
+	echo "=============================================="
+	echo "START: REPACK_KERNEL"
+	echo "=============================================="
+	echo ""
+	      echo "$KERNEL_NAME_WSM_G920F" 
+	if [ -e $BUILD_KERNEL_DIR/backup_image/g920fwsmzImage ]; then
+	      cp -r $BUILD_KERNEL_DIR/backup_image/g920fwsmzImage $BOOTIMG_DIR_2/Image
+	      cp $KERNEL_DIR/build/dt/$DT_G920F $BI_DIR/dt/$DT_G920F
+	      cd build_image
+	      cp -r Image boot/zImage
+	      rm output_kernel/*.zip
+	      echo "Making boot.img ..."
+	      #$DTBTOOL -o dt.img -s $BOARD_KERNEL_PAGESIZE -p ../scripts/dtc/ ../arch/arm64/boot/dts/ | sleep 1	      
+	      chmod a+r dt/$DT_G920F
+	      cp dt/$DT_G920F boot/dt.img
+	      ./mkboot boot boot.img	      
+	      echo "Making zip ..."
+	      SEANDROIDENFORCE
+	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
+	      cd $FLASH_ZIP_FILES
+	      zip -r $KERNEL_NAME_WSM_G920F.zip META-INF system kernel data
+	      mv $KERNEL_NAME_WSM_G920F.zip $OUTPUT_DIR
+	      echo "Making cleaning ..."
+	      cd ..
+	      rm dt/$DT_G920F
+	      rm boot.img
+	      rm Image
+	      rm zip_files/kernel/boot.img
+	      rm boot/zImage
+	      rm boot/dt.img
+	      cd $KERNEL_DIR
+	      CHANGELOG
+	      echo "All Done!"
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: REPACK_KERNEL"
+	      echo "================================="
+	      echo ""
+	      
+	else
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: FAIL KERNEL BUILD!"
+	      echo "================================="
+	      echo ""
+	      exit 0;
+	fi;
+	END_TIME=`date +%s`
+	let "ELAPSED_TIME=$END_TIME-$START_TIME"
+	echo "Total compile time is $ELAPSED_TIME seconds"
+) 2>&1	 | tee -a ./repackg920fwsm.log	
+}
+
+REPACK_ONLY_G925FWSM()
+{
+rm -rf ./repackg925fwsm.log
+(
+	START_TIME=`date +%s`
+	BUILD_DATE=`date +%m-%d-%Y`
+	echo ""
+	echo "=============================================="
+	echo "START: REPACK_KERNEL"
+	echo "=============================================="
+	echo ""
+	      echo "$KERNEL_NAME_WSM_G925F" 
+	if [ -e $BUILD_KERNEL_DIR/backup_image/g925fwsmzImage ]; then
+	      cp -r $BUILD_KERNEL_DIR/backup_image/g925fwsmzImage $BOOTIMG_DIR_2/Image
+	      cp $KERNEL_DIR/build/dt/$DT_G925F $BI_DIR/dt/$DT_G925F
+	      cd build_image
+	      cp -r Image boot/zImage
+	      rm output_kernel/*.zip
+	      echo "Making boot.img ..."
+	      #$DTBTOOL -o dt.img -s $BOARD_KERNEL_PAGESIZE -p ../scripts/dtc/ ../arch/arm64/boot/dts/ | sleep 1	      
+	      chmod a+r dt/$DT_G925F
+	      cp dt/$DT_G925F boot/dt.img
+	      ./mkboot boot boot.img	      
+	      echo "Making zip ..."
+	      SEANDROIDENFORCE
+	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
+	      cd $FLASH_ZIP_FILES
+	      zip -r $KERNEL_NAME_WSM_G925F.zip META-INF system kernel data
+	      mv $KERNEL_NAME_WSM_G925F.zip $OUTPUT_DIR
+	      echo "Making cleaning ..."
+	      cd ..
+	      rm dt/$DT_G925F
+	      rm boot.img
+	      rm Image
+	      rm zip_files/kernel/boot.img
+	      rm boot/zImage
+	      rm boot/dt.img
+	      cd $KERNEL_DIR
+	      CHANGELOG
+	      echo "All Done!"
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: REPACK_KERNEL"
+	      echo "================================="
+	      echo ""
+	      
+	else
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: FAIL KERNEL BUILD!"
+	      echo "================================="
+	      echo ""
+	      exit 0;
+	fi;
+	END_TIME=`date +%s`
+	let "ELAPSED_TIME=$END_TIME-$START_TIME"
+	echo "Total compile time is $ELAPSED_TIME seconds"
+) 2>&1	 | tee -a ./repackg925fwsm.log	
 }
 
 # MAIN FUNCTION
@@ -811,35 +1063,104 @@ rm -rf ./buildg925fwsm.log
 ) 2>&1	 | tee -a ./buildg920fwsm.log
 }
 
+BUILD_KERNEL_MENU()
+{
 while true; do
+    clear
     echo ""
     echo "a = Build G920F with sound mod"
     echo "b = Build G920F without sound mod"
     echo "c = Build G925F with sound mod"
     echo "d = Build G925F without sound mod"
-    echo "z = Make Changelog"
     echo ""
-    read -p "Do you wish to build? = " abcdz
-    case $abcdz in
+    echo "q = Back to Main Menu"
+    echo ""
+    read -p "Do you wish to build? = " abcdq
+    case $abcdq in
         [Aa]* )
-        G920F && exit 0;;
+        G920F;;
         
         [Bb]* )
-        G920FWSM && exit 0;;
+        G920FWSM;;
         
         [Cc]* )
-        G925F && exit 0;;
+        G925F;;
         
         [Dd]* )
-        G925FWSM && exit 0;;
-        
-        [Zz]* )
-        CHANGELOG;;
+        G925FWSM;;
+            
+        [Qq]* )
+        MAIN_MENU;;
         
         * ) echo "Please answer.";;
 
     esac
 done
+}
+
+REPACK_KERNEL_MENU()
+{
+while true; do
+    clear
+    echo ""
+    echo "a = Repack G920F with sound mod"
+    echo "b = Repack G920F without sound mod"
+    echo "c = Repack G925F with sound mod"
+    echo "d = Repack G925F without sound mod"
+    echo ""
+    echo "q = Back to Main Menu"
+    echo ""
+    read -p "Do you wish to build? = " abcdq
+    case $abcdq in
+        [Aa]* )
+        REPACK_ONLY_G920F;;
+        
+        [Bb]* )
+        REPACK_ONLY_G920FWSM;;
+        
+        [Cc]* )
+        REPACK_ONLY_G925F;;
+        
+        [Dd]* )
+        REPACK_ONLY_G925FWSM;;
+                    
+        [Qq]* )
+        MAIN_MENU;;
+        
+        * ) echo "Please answer.";;
+
+    esac
+done
+}
+
+MAIN_MENU()
+{
+while true; do
+    clear
+    echo ""
+    echo "a = Build Kernel"
+    echo "b = Repack Kernel"
+    echo ""
+    echo "q = Exit"
+    echo ""
+    read -p "Do you wish to build? = " abq
+    case $abq in
+        [Aa]* )
+        BUILD_KERNEL_MENU;;
+        
+        [Bb]* )
+        REPACK_KERNEL_MENU;;
+     
+        [Qq]* )
+        exit 0;;
+        
+        * ) echo "Please answer.";;
+
+    esac
+done
+}
+
+MAIN_MENU
 
 # Credits:
 # Samsung
