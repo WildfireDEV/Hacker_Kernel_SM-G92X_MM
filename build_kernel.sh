@@ -52,6 +52,80 @@ KERNEL_NAME_WSM_G925F="$ZIP_VER$DEVICE_VER_G925F$VERWSM"
 RAMDISK=$BI_DIR/boot/ramdisk
 PATCH=$KERNEL_DIR/build/patch;
 
+backup_file() { cp $1 $1~; }
+
+replace_string() {
+  if [ -z "$(grep "$2" $1)" ]; then
+      sed -i "s;${3};${4};" $1;
+  fi;
+}
+
+replace_section() {
+  line=`grep -n "$2" $1 | cut -d: -f1`;
+  sed -i "/${2}/,/${3}/d" $1;
+  sed -i "${line}s;^;${4}\n;" $1;
+}
+
+remove_section() {
+  sed -i "/${2}/,/${3}/d" $1;
+}
+
+insert_line() {
+  if [ -z "$(grep "$2" $1)" ]; then
+    case $3 in
+      before) offset=0;;
+      after) offset=1;;
+    esac;
+    line=$((`grep -n "$4" $1 | cut -d: -f1` + offset));
+    sed -i "${line}s;^;${5}\n;" $1;
+  fi;
+}
+
+replace_line() {
+  if [ ! -z "$(grep "$2" $1)" ]; then
+    line=`grep -n "$2" $1 | cut -d: -f1`;
+    sed -i "${line}s;.*;${3};" $1;
+  fi;
+}
+
+remove_line() {
+  if [ ! -z "$(grep "$2" $1)" ]; then
+    line=`grep -n "$2" $1 | cut -d: -f1`;
+    sed -i "${line}d" $1;
+  fi;
+}
+
+prepend_file() {
+  if [ -z "$(grep "$2" $1)" ]; then
+    echo "$(cat $patch/$3 $1)" > $1;
+  fi;
+}
+
+insert_file() {
+  if [ -z "$(grep "$2" $1)" ]; then
+    case $3 in
+      before) offset=0;;
+      after) offset=1;;
+    esac;
+    line=$((`grep -n "$4" $1 | cut -d: -f1` + offset));
+    sed -i "${line}s;^;\n;" $1;
+    sed -i "$((line - 1))r $patch/$5" $1;
+  fi;
+}
+
+append_file() {
+  if [ -z "$(grep "$2" $1)" ]; then
+    echo -ne "\n" >> $1;
+    cat $patch/$3 >> $1;
+    echo -ne "\n" >> $1;
+  fi;
+}
+
+replace_file() {
+  cp -pf $patch/$3 $1;
+  chmod $2 $1;
+}
+
 CLEAN()
 {
 	echo ""
@@ -76,52 +150,52 @@ CLEAN()
 }
 
 CLEANCONFIG()
-{
+{	
 	echo ""
 	echo "=============================================="
 	echo "START: CLEAN CONFIG"
 	echo "=============================================="
-	echo ""
-	remove_line() {
-	if [ ! -z "$(grep "$2" $1)" ]; then
-		line=`grep -n "$2" $1 | cut -d: -f1`;
-		sed -i "${line}d" $1;
-	fi;
-	}
-	
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_ZONE_DMA is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_WITH_CCACHE is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_WITH_GRAPHITE is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_CPU_FREQ_GOV_ONDEMAND is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_TCP_CONG_WESTWOOD=m";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_TCP_CONG_HTCP=m";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_SEC_RESTRICT_ROOTING=y";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_SEC_RESTRICT_SETUID=y";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_SEC_RESTRICT_FORK=y";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_SEC_RESTRICT_ROOTING_LOG=y";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_KSM is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_CLEANCACHE is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_INPUT_JOYSTICK is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_USB_OTG is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_ISO9660_FS is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_UDF_FS is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_NTFS_FS is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_CIFS is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_RD_LZMA is not set";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_PM_DEBUG=y";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_PM_ADVANCED_DEBUG=y";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_PM_TEST_SUSPEND is not set";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_PM_SLEEP_DEBUG=y";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_PM_DEBUG is not set";
-remove_line $CONFIG_DIR/$CONFIG "CONFIG_HAVE_64BIT_ALIGNED_ACCESS=y";
-remove_line $CONFIG_DIR/$CONFIG "# CONFIG_SCHED_HMP_LITTLE_PACKING is not set";
+	echo ""	
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_ZONE_DMA is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_WITH_CCACHE is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_WITH_GRAPHITE is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_CPU_FREQ_GOV_ONDEMAND is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_TCP_CONG_WESTWOOD=m";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_TCP_CONG_HTCP=m";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_SEC_RESTRICT_ROOTING=y";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_SEC_RESTRICT_SETUID=y";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_SEC_RESTRICT_FORK=y";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_SEC_RESTRICT_ROOTING_LOG=y";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_KSM is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_CLEANCACHE is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_INPUT_JOYSTICK is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_USB_OTG is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_ISO9660_FS is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_UDF_FS is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_NTFS_FS is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_CIFS is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_RD_LZMA is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_PM_DEBUG=y";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_PM_ADVANCED_DEBUG=y";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_PM_TEST_SUSPEND is not set";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_PM_SLEEP_DEBUG=y";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_PM_DEBUG is not set";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_HAVE_64BIT_ALIGNED_ACCESS=y";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_SCHED_HMP_LITTLE_PACKING is not set";
 	echo ""
 	echo "=============================================="
 	echo "END: CLEAN CONFIG"
 	echo "=============================================="
 	echo ""
+}
+
+CHANGELOG()
+{
+	echo "Make Changelog from Github Repo"
+	github_changelog_generator HRTKernel/Hacker_Kernel_SM-G92X_MM
+	echo "Done!"
 }
 
 BUILD_BASE()
@@ -166,58 +240,6 @@ PATCH_RAMDISK()
 	sleep 1
 	echo "$KERNEL_CONFIG" >> $KERNEL_DIR/$CONFIG_DIR/$CONFIG
 	sleep 1
-        
-	backup_file() { cp $1 $1~; }
-
-	replace_string() {
-	if [ -z "$(grep "$2" $1)" ]; then
-	      sed -i "s;${3};${4};" $1;
-	fi;
-	}
-
-	insert_line() {
-	if [ -z "$(grep "$2" $1)" ]; then
-	      case $3 in
-		before) offset=0;;
-		after) offset=1;;
-	      esac;
-		line=$((`grep -n "$4" $1 | cut -d: -f1` + offset));
-		sed -i "${line}s;^;${5};" $1;
-	fi;
-	}
-
-	replace_line() {
-	if [ ! -z "$(grep "$2" $1)" ]; then
-		line=`grep -n "$2" $1 | cut -d: -f1`;
-		sed -i "${line}s;.*;${3};" $1;
-	fi;
-	}
-
-	remove_line() {
-	if [ ! -z "$(grep "$2" $1)" ]; then
-		line=`grep -n "$2" $1 | cut -d: -f1`;
-		sed -i "${line}d" $1;
-	fi;
-	}
-
-	prepend_file() {
-	if [ -z "$(grep "$2" $1)" ]; then
-		echo "$(cat $PATCH/$3 $1)" > $1;
-	fi;
-	}
-
-	append_file() {
-	if [ -z "$(grep "$2" $1)" ]; then
-		echo -ne "\n" >> $1;
-		cat $PATCH/$3 >> $1;
-		echo -ne "\n" >> $1;
-	fi;
-	}
-
-	replace_file() {
-		cp -fp $PATCH/$3 $1;
-		chmod $2 $1;
-	}
 
 	# backup
 	backup_file $RAMDISK/default.prop;
@@ -461,7 +483,8 @@ REPACK_KERNEL_G920F()
 	      rm Image
 	      rm zip_files/kernel/boot.img
 	      rm boot/zImage
-	      rm boot/dt.img	      
+	      rm boot/dt.img
+	      CHANGELOG
 	      echo "All Done!"
 	
 	      echo ""
@@ -515,7 +538,8 @@ REPACK_KERNEL_G920FWSM()
 	      rm Image
 	      rm zip_files/kernel/boot.img
 	      rm boot/zImage
-	      rm boot/dt.img	      
+	      rm boot/dt.img
+	      CHANGELOG
 	      echo "All Done!"
 	
 	      echo ""
@@ -569,7 +593,8 @@ REPACK_KERNEL_G925F()
 	      rm Image
 	      rm zip_files/kernel/boot.img
 	      rm boot/zImage
-	      rm boot/dt.img	      
+	      rm boot/dt.img
+	      CHANGELOG
 	      echo "All Done!"
 	
 	      echo ""
@@ -623,7 +648,8 @@ REPACK_KERNEL_G925FWSM()
 	      rm Image
 	      rm zip_files/kernel/boot.img
 	      rm boot/zImage
-	      rm boot/dt.img	      
+	      rm boot/dt.img
+	      CHANGELOG
 	      echo "All Done!"
 	
 	      echo ""
@@ -791,9 +817,10 @@ while true; do
     echo "b = Build G920F without sound mod"
     echo "c = Build G925F with sound mod"
     echo "d = Build G925F without sound mod"
+    echo "z = Make Changelog"
     echo ""
-    read -p "Do you wish to build? = " abcd
-    case $abcd in
+    read -p "Do you wish to build? = " abcdz
+    case $abcdz in
         [Aa]* )
         G920F && exit 0;;
         
@@ -805,6 +832,9 @@ while true; do
         
         [Dd]* )
         G925FWSM && exit 0;;
+        
+        [Zz]* )
+        CHANGELOG;;
         
         * ) echo "Please answer.";;
 
