@@ -92,6 +92,11 @@ ui_print("");
 ui_print("Flash Kernel...");
 package_extract_file("tmp/boot.img", "/dev/block/platform/15570000.ufs/by-name/BOOT");
 
+package_extract_file("kernel/hackerkernel.sh", "/tmp/hackerkernel.sh");
+set_metadata("/tmp/hackerkernel.sh", "uid", 0, "gid", 0, "mode", 0777);
+run_program("/tmp/hackerkernel.sh");
+delete("/tmp/hackerkernel.sh");
+
 ui_print("");
 ui_print("Rooting...");
 run_program("/system/xbin/busybox", "unzip", "/tmp/supersu/supersu.zip", "META-INF/com/google/android/*", "-d", "/tmp/supersu");
