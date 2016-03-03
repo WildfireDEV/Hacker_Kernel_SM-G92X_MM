@@ -103,13 +103,15 @@ busybox mount -t rootfs -o remount,rw rootfs
 busybox chmod -R 755 /res/dumping
 busybox mount -t rootfs -o remount,ro rootfs
 
+$BB mount -t rootfs -o remount,rw rootfs
+$BB mount -o remount,rw /system
+
 # Setup for Cron Task
 # Copy Cron files
 $BB cp -a /res/crontab/ /data/
-if [ ! -e /data/crontab/custom_jobs ]; then
-	$BB touch /data/crontab/custom_jobs;
-	$BB chmod 777 /data/crontab/custom_jobs;
-fi
+
+# Start CROND by tree root, so it's will not be terminated.
+$BB nohup $BB sh /res/crontab_service/service.sh > /dev/null;
 
 # kernel custom test
 
