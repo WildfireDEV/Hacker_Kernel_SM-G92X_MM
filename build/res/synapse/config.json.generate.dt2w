@@ -1,9 +1,9 @@
 #!/system/bin/sh
-# Script make by friedrich420
+# Script make by friedrich420 and UpInTheAir
 
 cat << CTAG
 {
-    name:DT2W,
+    name:Wake Gestures,
     elements:[
 	{ SPane:{
 		title:"Screen Wake Functions",
@@ -23,6 +23,31 @@ cat << CTAG
 	}},
 	{ SDescription:{
 		description:" "
+	}},
+	}},
+	{ SPane:{
+		title:"Sweep-2-Sleep",
+		description:"Allows you to turn the screen off by swiping the screen just above the HOME key from right > left (or) left > right."
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SDescription:{
+		description:"NOTE: Ensure PowerSuspend 'State' is DISABLED"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
+		description:"Default is Disabled.\n",
+		default:0,
+		action:"generic /sys/sweep2sleep/sweep2sleep",
+		values:{
+			0:"Disabled", 1:"Enabled"
+		}
+	}},
+	{ SSpacer:{
+		height:1
 	}},
     ]
 }
