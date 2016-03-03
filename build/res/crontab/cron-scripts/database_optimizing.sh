@@ -21,13 +21,13 @@ if [ "$SQLITE" == 1 ]; then
 	done;
 
 	for i in $(find /data -iname "*.db"); do
-		sbin/sqlite3 "$i" 'VACUUM;' 2> /dev/null;
-		sbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
+		/system/xbin/sqlite3 "$i" 'VACUUM;' 2> /dev/null;
+		/system/xbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
 	done;
 
 	for i in $(find /sdcard -iname "*.db"); do
-		sbin/sqlite3 "$i" 'VACUUM;' 2> /dev/null;
-		sbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
+		/system/xbin/sqlite3 "$i" 'VACUUM;' 2> /dev/null;
+		/system/xbin/sqlite3 "$i" 'REINDEX;' 2> /dev/null;
 	done;
 	sync;
 
