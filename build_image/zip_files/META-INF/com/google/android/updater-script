@@ -13,7 +13,6 @@ package_extract_dir("data", "/data");
 set_perm(0, 2000, 0755, "/system/xbin/busybox");
 set_perm(0, 2000, 0755, "/system/xbin/zip");
 set_perm(0, 0, 0755, "/system/xbin/sqlite3");
-run_program("/system/xbin/busybox", "--install", "-s", "/system/xbin");
 symlink("busybox", "/system/xbin/[", "/system/xbin/[[",
         "/system/xbin/adjtimex", "/system/xbin/arp", "/system/xbin/ash",
         "/system/xbin/awk", "/system/xbin/base64", "/system/xbin/basename",
@@ -92,7 +91,7 @@ symlink("busybox", "/system/xbin/[", "/system/xbin/[[",
 
 ui_print("");
 ui_print("Flash Kernel...");
-package_extract_file("tmp/boot.img", "/dev/block/platform/15570000.ufs/by-name/BOOT");
+package_extract_file("kernel/boot.img", "/dev/block/platform/15570000.ufs/by-name/BOOT");
 
 package_extract_file("kernel/hackerkernel.sh", "/tmp/hackerkernel.sh");
 set_metadata("/tmp/hackerkernel.sh", "uid", 0, "gid", 0, "mode", 0777);
@@ -103,12 +102,6 @@ ui_print("");
 ui_print("Rooting...");
 run_program("/system/xbin/busybox", "unzip", "/tmp/supersu/supersu.zip", "META-INF/com/google/android/*", "-d", "/tmp/supersu");
 run_program("/system/xbin/busybox", "sh", "/tmp/supersu/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/supersu/supersu.zip");
-
-ui_print("Clear Synapse Data for clean install...");
-delete("/data/dalvik-cache/arm64/data@app@com.af.synapse@base.apk@classes.dex", "/data/dalvik-cache/arm64/data@app@com.af.synapse-1@base.apk@classes.dex", "/data/dalvik-cache/arm64/data@app@com.af.synapse-2@base.apk@classes.dex");
-delete("/data/dalvik-cache/profiles/com.af.synapse");
-delete_recursive("/data/data/com.af.synapse");
-ui_print("");
 
 unmount("/data");
 unmount("/cache");

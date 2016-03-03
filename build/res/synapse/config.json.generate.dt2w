@@ -24,7 +24,6 @@ cat << CTAG
 	{ SDescription:{
 		description:" "
 	}},
-	}},
 	{ SPane:{
 		title:"Sweep-2-Sleep",
 		description:"Allows you to turn the screen off by swiping the screen just above the HOME key from right > left (or) left > right."
