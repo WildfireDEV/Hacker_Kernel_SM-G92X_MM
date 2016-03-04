@@ -76,8 +76,8 @@ CPUFREQ22=2100000 #only A57 Cluster!
 CPUFREQ23=2200000 #only A57 Cluster!
 CPUFREQ24=2304000 #only A57 Cluster!
 
-mount -o remount,rw /system
-mount -o remount,rw /data
+busybox mount -t rootfs -o remount,rw rootfs
+busybox mount -o remount,rw /system
 
 sync
 
@@ -87,7 +87,7 @@ sync
 busybox mount -t rootfs -o remount,rw rootfs
 if [ ! -d /data/.hackerkernel ]; then
 	mkdir /data/.hackerkernel
-	$BB chmod -R 0777 /.hackerkernel/
+	busybox chmod -R 0777 /.hackerkernel/
 fi
 busybox mount -t rootfs -o remount,ro rootfs
 
@@ -103,15 +103,47 @@ busybox mount -t rootfs -o remount,rw rootfs
 busybox chmod -R 755 /res/dumping
 busybox mount -t rootfs -o remount,ro rootfs
 
-$BB mount -t rootfs -o remount,rw rootfs
-$BB mount -o remount,rw /system
+busybox mount -t rootfs -o remount,rw rootfs
+busybox mount -o remount,rw /system
+
+# Set SELinux permissive by default
+setenforce 0
+
+# Allow untrusted apps to read from debugfs (mitigate SELinux denials)
+if [ -e /su/lib/libsupol.so ]; then
+/system/xbin/supolicy --live \
+	"allow untrusted_app debugfs file { open read getattr }" \
+	"allow untrusted_app sysfs_lowmemorykiller file { open read getattr }" \
+	"allow untrusted_app sysfs_devices_system_iosched file { open read getattr }" \
+	"allow untrusted_app persist_file dir { open read getattr }" \
+	"allow debuggerd gpu_device chr_file { open read getattr }" \
+	"allow netd netd capability fsetid" \
+	"allow netd { hostapd dnsmasq } process fork" \
+	"allow { system_app shell } dalvikcache_data_file file write" \
+	"allow { zygote mediaserver bootanim appdomain }  theme_data_file dir { search r_file_perms r_dir_perms }" \
+	"allow { zygote mediaserver bootanim appdomain }  theme_data_file file { r_file_perms r_dir_perms }" \
+	"allow system_server { rootfs resourcecache_data_file } dir { open read write getattr add_name setattr create remove_name rmdir unlink link }" \
+	"allow system_server resourcecache_data_file file { open read write getattr add_name setattr create remove_name unlink link }" \
+	"allow system_server dex2oat_exec file rx_file_perms" \
+	"allow mediaserver mediaserver_tmpfs file execute" \
+	"allow drmserver theme_data_file file r_file_perms" \
+	"allow zygote system_file file write" \
+	"allow atfwd property_socket sock_file write" \
+	"allow untrusted_app sysfs_display file { open read write getattr add_name setattr remove_name }" \
+	"allow debuggerd app_data_file dir search" \
+	"allow sensors diag_device chr_file { read write open ioctl }" \
+	"allow sensors sensors capability net_raw" \
+	"allow init kernel security setenforce" \
+	"allow netmgrd netmgrd netlink_xfrm_socket nlmsg_write" \
+	"allow netmgrd netmgrd socket { read write open ioctl }"
+fi;
 
 # Setup for Cron Task
 # Copy Cron files
-$BB cp -a /res/crontab/ /data/
+busybox cp -a /res/crontab/ /data/
 
 # Start CROND by tree root, so it's will not be terminated.
-$BB nohup $BB sh /res/crontab_service/service.sh > /dev/null;
+busybox nohup busybox sh /res/crontab_service/service.sh > /dev/null;
 
 # kernel custom test
 
@@ -120,17 +152,17 @@ rm /data/hackertest.log
 fi
 
 # Stop Google Service and restart it on boot (dorimanx)
-#if [ "$($BB pidof com.google.android.gms | wc -l)" -eq "1" ]; then
-#	$BB kill $($BB pidof com.google.android.gms);
+#if [ "$(busybox pidof com.google.android.gms | wc -l)" -eq "1" ]; then
+#	busybox kill $(busybox pidof com.google.android.gms);
 #fi
-#if [ "$($BB pidof com.google.android.gms.unstable | wc -l)" -eq "1" ]; then
-#	$BB kill $($BB pidof com.google.android.gms.unstable);
+#if [ "$(busybox pidof com.google.android.gms.unstable | wc -l)" -eq "1" ]; then
+#	busybox kill $(busybox pidof com.google.android.gms.unstable);
 #fi
-#if [ "$($BB pidof com.google.android.gms.persistent | wc -l)" -eq "1" ]; then
-#	$BB kill $($BB pidof com.google.android.gms.persistent);
+#if [ "$(busybox pidof com.google.android.gms.persistent | wc -l)" -eq "1" ]; then
+#	busybox kill $(busybox pidof com.google.android.gms.persistent);
 #fi
-#if [ "$($BB pidof com.google.android.gms.wearable | wc -l)" -eq "1" ]; then
-#	$BB kill $($BB pidof com.google.android.gms.wearable);
+#if [ "$(busybox pidof com.google.android.gms.wearable | wc -l)" -eq "1" ]; then
+#	busybox kill $(busybox pidof com.google.android.gms.wearable);
 #fi
 #echo "Stop Google Service successful." >> /data/hackertest.log
 
@@ -208,34 +240,34 @@ fi
 #echo "Set default Min/Max Clusters values on boot successful." >> /data/hackertest.log
 
 if [ ! -d $LOGS ]; then
-	$BB mkdir /data/media/0/hackerkernel/Logs
+	busybox mkdir /data/media/0/hackerkernel/Logs
 fi
 
-$BB chmod -R 0777 $LOGS
+busybox chmod -R 0777 $LOGS
 
 if [ ! -d $VALUES ]; then
-	$BB mkdir /data/media/0/hackerkernel/values
+	busybox mkdir /data/media/0/hackerkernel/values
 fi
-$BB chmod -R 0777 $VALUES
+busybox chmod -R 0777 $VALUES
 
 echo "Interactive" > /data/media/0/hackerkernel/values/gpu_gov
 
-$BB chmod -R 0777 /data/media/0/hackerkernel/values/gpu_gov
+busybox chmod -R 0777 /data/media/0/hackerkernel/values/gpu_gov
 
 echo "Set default folder successful." >> /data/hackertest.log
 
-$BB chown -R system:system /data/anr
-$BB chown -R root:root /tmp
-$BB chown -R root:root /res
-$BB chown -R root:root /sbin
-$BB chown -R root:root /lib
-$BB chmod -R 777 /tmp/
-$BB chmod -R 775 /res/
-$BB chmod -R 0777 /data/anr/
-$BB chmod -R 0400 /data/tombstones
-$BB chown -R root:root /data/property
-$BB chmod -R 0700 /data/property
-$BB chmod 06755 /sbin/busybox
+busybox chown -R system:system /data/anr
+busybox chown -R root:root /tmp
+busybox chown -R root:root /res
+busybox chown -R root:root /sbin
+busybox chown -R root:root /lib
+busybox chmod -R 777 /tmp/
+busybox chmod -R 775 /res/
+busybox chmod -R 0777 /data/anr/
+busybox chmod -R 0400 /data/tombstones
+busybox chown -R root:root /data/property
+busybox chmod -R 0700 /data/property
+busybox chmod 06755 /sbin/busybox
 echo "Critical Permissions fixed successful." >> /data/hackertest.log
 
 # Tweak interextrem
@@ -582,5 +614,8 @@ if [ "`grep "kernel.knox=true" $PROP`" != "" ]; then
 fi
 
 rm -rf $PROP
+
+busybox mount -t rootfs -o remount,ro rootfs
+busybox mount -o remount,ro /system
 
 sleep 1;
