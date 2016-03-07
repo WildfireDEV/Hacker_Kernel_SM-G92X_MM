@@ -6,25 +6,6 @@ cat << CTAG
     name:Wake Gestures,
     elements:[
 	{ SPane:{
-		title:"Screen Wake Functions",
-		description:" Choose to Wake Up your Screen by double tapping on the screen. Default is Disabled.",
-	}},
-	{ SDescription:{
-		description:" "
-	}},
-	{ SOptionList:{
-		title:"DoubleTap To Wake",
-		default:`cat /sys/android_touch/doubletap2wake`,
-		action:"generic /sys/android_touch/doubletap2wake",
-		values:{
-			`PROF='0:"Disabled", 1:"dt2w"'
-			echo $PROF`
-		}
-	}},
-	{ SDescription:{
-		description:" "
-	}},
-	{ SPane:{
 		title:"Sweep-2-Sleep",
 		description:"Allows you to turn the screen off by swiping the screen just above the HOME key from right > left (or) left > right."
 	}},
