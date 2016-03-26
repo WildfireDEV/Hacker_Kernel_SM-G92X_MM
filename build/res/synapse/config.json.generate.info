@@ -134,6 +134,26 @@ cat << CTAG
 	{ SDescription:{
 		description:" "
 	}},
+	{ SPane:{
+		title:"Busybox Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default busybox_version"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SPane:{
+		title:"SU Binary Version"
+	}},
+	{ SLiveLabel:{
+		refresh:10000,
+		action:"default su_version"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
     ]
 }
 CTAG
