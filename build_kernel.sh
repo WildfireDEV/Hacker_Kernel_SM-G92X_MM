@@ -320,6 +320,10 @@ PATCH_RAMDISK()
 	rm -rf $RAMDISK/res 
 	cp -r $KERNEL_DIR/build/res $RAMDISK/res
 	
+	# ADB
+	rm -rf $RAMDISK/sbin/adbd
+	cp -r $KERNEL_DIR/patch/adbd_5.1.1 $RAMDISK/sbin/adbd
+	
 	# fix permissions
 	cd $RAMDISK
 	chmod 644 file_contexts
