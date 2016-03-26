@@ -322,7 +322,7 @@ PATCH_RAMDISK()
 	
 	# ADB
 	rm -rf $RAMDISK/sbin/adbd
-	cp -r $KERNEL_DIR/patch/adbd_5.1.1 $RAMDISK/sbin/adbd
+	cp -r $KERNEL_DIR/build/patch/adbd_5.1.1 $RAMDISK/sbin/adbd
 	
 	# fix permissions
 	cd $RAMDISK
