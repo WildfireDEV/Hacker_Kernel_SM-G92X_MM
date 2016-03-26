@@ -1,4 +1,5 @@
 case $1 in
+BB=/system/xbin/busybox;
 gamma)
   P=/sys/class/mdnie/mdnie/gamma_curve
   if [ ! -z $2 ]
@@ -152,4 +153,10 @@ serial)
 susp)
   echo `cat /sys/kernel/power_suspend/power_suspend_version`
   ;;
+busybox_version)
+  $BB echo "$(busybox | head -1)"
+  ;;
+su_version)
+  $BB echo "$(su -v)"
+  ;;  
 esac
