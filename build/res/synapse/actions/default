@@ -1,5 +1,5 @@
-case $1 in
 BB=/system/xbin/busybox;
+case $1 in
 gamma)
   P=/sys/class/mdnie/mdnie/gamma_curve
   if [ ! -z $2 ]
