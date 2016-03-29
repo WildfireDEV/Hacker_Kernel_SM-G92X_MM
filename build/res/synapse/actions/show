@@ -161,22 +161,21 @@ LiveTime2)
 	echo "$STATE";
 	;;
 
-
 LiveUpTime)
-	TOTAL=`$BB awk '{ print $1 }' /proc/uptime`;
-	AWAKE=$((`$BB awk '{s+=$2} END {print s}' /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state` / 100));
-	SLEEP=`$BB awk "BEGIN { print ($TOTAL - $AWAKE) }"`;
-	
-	PERC_A=`$BB awk "BEGIN { print ( ($AWAKE / $TOTAL) * 100) }"`;
-	PERC_A="`$BB printf "%0.1f\n" $PERC_A`%";
-	PERC_S=`$BB awk "BEGIN { print ( ($SLEEP / $TOTAL) * 100) }"`;
-	PERC_S="`$BB printf "%0.1f\n" $PERC_S`%";
-	
-	TOTAL=`$BB echo - | $BB awk -v "S=$TOTAL" '{printf "%dh:%dm:%ds",S/(60*60),S%(60*60)/60,S%60}'`;
-	AWAKE=`$BB echo - | $BB awk -v "S=$AWAKE" '{printf "%dh:%dm:%ds",S/(60*60),S%(60*60)/60,S%60}'`;
-	SLEEP=`$BB echo - | $BB awk -v "S=$SLEEP" '{printf "%dh:%dm:%ds",S/(60*60),S%(60*60)/60,S%60}'`;
-	echo "Total: $TOTAL (100.0%)@nSleep: $SLEEP ($PERC_S)@nAwake: $AWAKE ($PERC_A)";
-	;;
+  TOTAL=$($BB awk '{ print $1 }' /proc/uptime);
+  AWAKE=$(($($BB awk '{s+=$2} END {print s}' /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state) / 100));
+  SLEEP=$($BB awk "BEGIN { print ($TOTAL - $AWAKE) }");
+		
+  PERC_A=$($BB awk "BEGIN { print ( ($AWAKE / $TOTAL) * 100) }");
+  PERC_A="$($BB printf "%0.1f\n" $PERC_A)%";
+  PERC_S=$($BB awk "BEGIN { print ( ($SLEEP / $TOTAL) * 100) }");
+  PERC_S="$($BB printf "%0.1f\n" $PERC_S)%";
+		
+  TOTAL=$($BB echo - | $BB awk -v "S=$TOTAL" '{printf "%dh:%dm:%ds",S/(60*60),S%(60*60)/60,S%60}');
+  AWAKE=$($BB echo - | $BB awk -v "S=$AWAKE" '{printf "%dh:%dm:%ds",S/(60*60),S%(60*60)/60,S%60}');
+  SLEEP=$($BB echo - | $BB awk -v "S=$SLEEP" '{printf "%dh:%dm:%ds",S/(60*60),S%(60*60)/60,S%60}');
+  $BB echo "Total: $TOTAL (100.0%)@nSleep: $SLEEP ($PERC_S)@nAwake: $AWAKE ($PERC_A)";
+;;
 
 LiveUnUsed)
 	UNUSED="";
