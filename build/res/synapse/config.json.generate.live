@@ -11,90 +11,43 @@ cat << CTAG
 	{ SLiveLabel:{
 	title:"Current A53 CPU Frequency",
 		refresh:1000,
-		action:"show freq"
+		action:"live LiveCPUFrequency_LITTLE"
 	}},
 
 	{ SLiveLabel:{
 	title:"Current A57 CPU Frequency",
 		refresh:1000,
-		action:"show freq2"
+		action:"live LiveCPUFrequency_big"
 	}},
-
-        { SLiveLabel:{
-                  title:"A53 Cores Online",
-                  refresh:1000,
-                  action:"echo \$(( \$(cat /sys/devices/system/cpu/cpu0/online) + \$(cat /sys/devices/system/cpu/cpu1/online) + \$(cat /sys/devices/system/cpu/cpu2/online) + \$(cat /sys/devices/system/cpu/cpu3/online) )) core\\\\(s\\\\)"
-        }},
-
-{ SLiveLabel:{
-		refresh:1000,
-		action:"show cpufreq"
-	}},
- 	{ SLiveLabel:{
-                  title:"A57 Cores online",
-                  refresh:1000,
-                  action:"echo \$(( \$(cat /sys/devices/system/cpu/cpu4/online) + \$(cat /sys/devices/system/cpu/cpu5/online) + \$(cat /sys/devices/system/cpu/cpu6/online) + \$(cat /sys/devices/system/cpu/cpu7/online) )) core\\\\(s\\\\)"
-        }},
 	{ SLiveLabel:{
-		refresh:1000,
-		action:"show cpufreq2"
+		title:"A53 LITTLE Cores time in state",
+		description:"CPU0",
+		refresh:2500,
+		action:"live Live_A53_Time 0 9"
 	}},
-
-
+	{ SLiveLabel:{
+		refresh:2500,
+		action:"live Live_A53_Time 10 14"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SLiveLabel:{
+		title:"A57 big Cores time in state",
+		description:"CPU4",
+		refresh:2500,
+		action:"live Live_A57_Time 0 9"
+	}},
+	{ SLiveLabel:{
+		refresh:2500,
+		action:"live Live_A57_Time 10 19"
+	}},
+	{ SSpacer:{
+		height:1
+	}},
 	{ SLiveLabel:{
 		refresh:10000,
-		action:"show battinfo"
-	
-	}},
-	{ SPane:{
-		title:"Uptime",
-		description:"."
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveUpTime"
-	}},
-
-	{ SPane:{
-		title:"Time in States A53",
-		description:""
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveTime 0 9"
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveTime 10 19"
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveTime 20 29"
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveTime 30 39"
-	}},
-
-	{ SPane:{
-		title:"Time in States A57",
-		description:""
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveTime2 0 9"
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveTime2 10 19"
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveTime2 20 29"
-	}},
-	{ SLiveLabel:{
-		refresh:0,
-		action:"show LiveTime2 30 39"
+		action:"show battinfo"	
 	}},
 	]
 }
