@@ -1,4 +1,4 @@
-BB=/sbin/busybox;
+BB=/system/xbin/busybox;
 
 case $1 in
 	reboot)
@@ -36,5 +36,11 @@ case $1 in
 		done;
 		
 		$BB echo "Databases have been optimized.";
+	;;
+	fix_wifi)
+		svc wifi disable 2> /dev/null;
+		rm -f /data/misc/dhcp/dhcpcd*;
+		svc wifi enable 2> /dev/null;
+		echo "WIFI Release Renew is DONE";
 	;;
 esac;

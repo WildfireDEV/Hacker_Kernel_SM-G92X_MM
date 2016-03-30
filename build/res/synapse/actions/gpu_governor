@@ -1,7 +1,7 @@
 # Script make by UpInTheAir
 case $1 in
 gpu_gov)
-  P=/data/media/0/hackerkernel/values/gpu_gov
+  P=/res/synapse/hrtkernel/gpu_gov
   if [ ! -z $2 ]; then
   if [ $2 == Default ]; then
     echo "Default" > $P

@@ -22,8 +22,8 @@ if [ -d /data/data/com.af.synapse ]; then
 fi;
 
 reset_uci() {
-  /res/synapse/uci reset;
-  /res/synapse/uci;
+  /res/synapse/hrtkernel/uci reset;
+  /res/synapse/hrtkernel/uci;
 }
 
 case "$1" in

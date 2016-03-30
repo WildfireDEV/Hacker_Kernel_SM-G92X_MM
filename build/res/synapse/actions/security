@@ -8,7 +8,7 @@ fi;
 
 case $1 in
 knox_security)
-  P=/data/media/0/hackerkernel/values/knox
+  P=/res/synapse/hrtkernel/knox
   if [ ! -z $2 ]; then
   if [ $2 == NO_ACTION ]; then
     echo 0 > $P
