@@ -9,7 +9,7 @@ fi;
 
 case $1 in
 key)
-  P=/data/media/0/hackerkernel/values/input_key
+  P=/res/synapse/hrtkernel/input_key
   if [ ! -z $2 ]; then
   if [ $2 == Default ]; then
     echo 0 > $P
@@ -37,7 +37,7 @@ key)
   fi
   ;;
 touchkey)
-  P=/data/media/0/hackerkernel/values/input_touchkey
+  P=/res/synapse/hrtkernel/input_touchkey
   if [ ! -z $2 ]; then
   if [ $2 == Default ]; then
     echo 0 > $P
