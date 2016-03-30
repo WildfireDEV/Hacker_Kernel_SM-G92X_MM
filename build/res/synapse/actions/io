@@ -8,7 +8,7 @@ fi;
 
 case $1 in
 io_tweaking)
-  P=/data/media/0/hackerkernel/values/io_tweaking
+  P=/res/synapse/hrtkernel/io_tweaking
   if [ ! -z $2 ]; then
   if [ $2 == Default ]; then
     echo 0 > $P

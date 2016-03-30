@@ -9,7 +9,7 @@ fi;
 
 case $1 in
 master)
-  P=/data/media/0/hackerkernel/values/cron_master
+  P=/res/synapse/hrtkernel/cron_master
   if [ ! -z $2 ]; then
   if [ $2 == Disabled ]; then
     echo 0 > $P
@@ -30,7 +30,7 @@ master)
   ;;
 
 cache)
-  P=/data/media/0/hackerkernel/values/cron_cache
+  P=/res/synapse/hrtkernel/cron_cache
   if [ ! -z $2 ]; then
   if [ $2 == Disabled ]; then
     echo 0 > $P
@@ -46,7 +46,7 @@ cache)
   ;;
 
 sqlite)
-  P=/data/media/0/hackerkernel/values/cron_sqlite
+  P=/res/synapse/hrtkernel/cron_sqlite
   if [ ! -z $2 ]; then
   if [ $2 == Disabled ]; then
     echo 0 > $P
@@ -62,7 +62,7 @@ sqlite)
   ;;
 
 drop_cache)
-  P=/data/media/0/hackerkernel/values/cron_drop_cache
+  P=/res/synapse/hrtkernel/cron_drop_cache
   if [ ! -z $2 ]; then
   if [ $2 == Disabled ]; then
     echo 0 > $P
@@ -78,7 +78,7 @@ drop_cache)
   ;;
 
 fg_reset)
-  P=/data/media/0/hackerkernel/values/cron_fg
+  P=/res/synapse/hrtkernel/cron_fg
   if [ ! -z $2 ]; then
   if [ $2 == Disabled ]; then
     echo 0 > $P
@@ -94,7 +94,7 @@ fg_reset)
   ;;
 
 google)
-  P=/data/media/0/hackerkernel/values/cron_google
+  P=/res/synapse/hrtkernel/cron_google
   if [ ! -z $2 ]; then
   if [ $2 == Disabled ]; then
     echo 0 > $P
@@ -110,7 +110,7 @@ google)
   ;;
 
 fstrim)
-  P=/data/media/0/hackerkernel/values/cron_fstrim
+  P=/res/synapse/hrtkernel/cron_fstrim
   if [ ! -z $2 ]; then
   if [ $2 == Disabled ]; then
     echo 0 > $P

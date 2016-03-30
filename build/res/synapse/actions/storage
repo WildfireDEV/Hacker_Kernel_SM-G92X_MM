@@ -5,7 +5,7 @@ BB=/system/xbin/busybox;
 case $1 in
 usb_mode)
   $BB mount -t rootfs -o remount,rw rootfs;
-  P=/data/media/0/hackerkernel/values/mass_storage
+  P=/res/synapse/hrtkernel/mass_storage
   if [ ! -z $2 ]; then
   if [ $2 == DEFAULT ]; then
     echo 0 > $P
