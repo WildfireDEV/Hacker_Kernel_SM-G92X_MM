@@ -3,11 +3,11 @@ Hacker-Echoe
 #Device
 -S6-Universal
 #Version
--V13
+-V14
 #Zip-Name
 hacker-echoe-kernel
 #Version
--V13-WSM
+-V14-WSM
 #Toolchain
 UBERTC-aarch64-linux-android-5.3/bin/aarch64-linux-android-
 #Su Version
