@@ -3,7 +3,7 @@ run_program("/sbin/mount", "-t", "auto", "/data");
 run_program("/sbin/mount", "-t", "auto", "/cache");
 
 ui_print("");
-ui_print("G920F Android M - testing file");
+ui_print("G92XF Android M - Hacker-Echoe Kernel");
 ui_print("by thehacker911");
 
 ui_print("Installing busybox");
