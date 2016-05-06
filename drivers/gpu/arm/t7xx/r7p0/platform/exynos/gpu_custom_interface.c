@@ -33,7 +33,7 @@
 #include <mach/asv-exynos.h>
 
 #ifdef CONFIG_SOC_EXYNOS7420
-#define GPU_MAX_VOLT		1018750
+#define GPU_MAX_VOLT		925000
 #define GPU_MIN_VOLT		500000
 #define GPU_VOLT_STEP		6250
 #else
@@ -228,6 +228,7 @@ static ssize_t show_asv_table(struct device *dev, struct device_attribute *attr,
 
 	return ret;
 }
+
 
 static ssize_t show_volt_table(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -1782,8 +1783,8 @@ DEVICE_ATTR(dvfs, S_IRUGO|S_IWUSR, show_dvfs, set_dvfs);
 DEVICE_ATTR(dvfs_governor, S_IRUGO|S_IWUSR, show_governor, set_governor);
 DEVICE_ATTR(dvfs_max_lock_status, S_IRUGO, show_max_lock_status, NULL);
 DEVICE_ATTR(dvfs_min_lock_status, S_IRUGO, show_min_lock_status, NULL);
-DEVICE_ATTR(dvfs_max_lock_, S_IRUGO|S_IWUSR, show_max_lock_dvfs, set_max_lock_dvfs);
-DEVICE_ATTR(dvfs_min_lock_, S_IRUGO|S_IWUSR, show_min_lock_dvfs, set_min_lock_dvfs);
+DEVICE_ATTR(dvfs_max_lock, S_IRUGO|S_IWUSR, show_max_lock_dvfs, set_max_lock_dvfs);
+DEVICE_ATTR(dvfs_min_lock, S_IRUGO|S_IWUSR, show_min_lock_dvfs, set_min_lock_dvfs);
 DEVICE_ATTR(down_staycount, S_IRUGO|S_IWUSR, show_down_staycount, set_down_staycount);
 DEVICE_ATTR(highspeed_clock, S_IRUGO|S_IWUSR, show_highspeed_clock, set_highspeed_clock);
 DEVICE_ATTR(highspeed_load, S_IRUGO|S_IWUSR, show_highspeed_load, set_highspeed_load);
@@ -1885,12 +1886,12 @@ int gpu_create_sysfs_file(struct device *dev)
 		goto out;
 	}
 
-	if (device_create_file(dev, &dev_attr_dvfs_max_lock_)) {
+	if (device_create_file(dev, &dev_attr_dvfs_max_lock)) {
 		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [dvfs_max_lock]\n");
 		goto out;
 	}
 
-	if (device_create_file(dev, &dev_attr_dvfs_min_lock_)) {
+	if (device_create_file(dev, &dev_attr_dvfs_min_lock)) {
 		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [dvfs_min_lock]\n");
 		goto out;
 	}
@@ -2041,8 +2042,8 @@ void gpu_remove_sysfs_file(struct device *dev)
 	device_remove_file(dev, &dev_attr_dvfs_governor);
 	device_remove_file(dev, &dev_attr_dvfs_max_lock_status);
 	device_remove_file(dev, &dev_attr_dvfs_min_lock_status);
-	device_remove_file(dev, &dev_attr_dvfs_max_lock_);
-	device_remove_file(dev, &dev_attr_dvfs_min_lock_);
+	device_remove_file(dev, &dev_attr_dvfs_max_lock);
+	device_remove_file(dev, &dev_attr_dvfs_min_lock);
 	device_remove_file(dev, &dev_attr_down_staycount);
 	device_remove_file(dev, &dev_attr_highspeed_clock);
 	device_remove_file(dev, &dev_attr_highspeed_load);
