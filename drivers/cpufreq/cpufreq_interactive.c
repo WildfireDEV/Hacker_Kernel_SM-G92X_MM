@@ -34,6 +34,7 @@
 #include <linux/kernel_stat.h>
 #include <linux/pm_qos.h>
 #include <linux/powersuspend.h>
+#include <linux/display_state.h>
 #include <asm/cputime.h>
 
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
@@ -90,6 +91,7 @@ static bool suspended = false;
 static unsigned int default_target_loads[] = {DEFAULT_TARGET_LOAD};
 
 #define DEFAULT_TIMER_RATE (20 * USEC_PER_MSEC)
+#define SCREEN_OFF_TIMER_RATE ((unsigned long)(60 * USEC_PER_MSEC))
 #define DEFAULT_ABOVE_HISPEED_DELAY DEFAULT_TIMER_RATE
 static unsigned int default_above_hispeed_delay[] = {
 	DEFAULT_ABOVE_HISPEED_DELAY };
@@ -156,6 +158,7 @@ struct cpufreq_interactive_tunables {
 	 * The sample rate of the timer used to increase frequency
 	 */
 	unsigned long timer_rate;
+	unsigned long prev_timer_rate;
 	/*
 	 * Wait this long before raising speed above hispeed, by default a
 	 * single timer interval.
@@ -750,6 +753,17 @@ static void cpufreq_interactive_timer(unsigned long data)
 		wake_up_process(tunables->regionchange_task);
 	}
 #endif
+
+	if (screen_is_on
+ 		&& tunables->timer_rate != tunables->prev_timer_rate)
+ 		tunables->timer_rate = tunables->prev_timer_rate;
+ 	else if (!screen_is_on
+ 		&& tunables->timer_rate != SCREEN_OFF_TIMER_RATE) {
+		tunables->prev_timer_rate = tunables->timer_rate;
+		tunables->timer_rate
+			= max(tunables->timer_rate,
+ 				SCREEN_OFF_TIMER_RATE);
+	}
 
 	if ((cpu_load >= tunables->go_hispeed_load || tunables->boosted) && !suspended) {
 		if (pcpu->policy->cur < tunables->hispeed_freq) {
@@ -1471,6 +1485,7 @@ static ssize_t store_timer_rate(struct cpufreq_interactive_tunables *tunables,
 	spin_unlock_irqrestore(&tunables->param_index_lock, flags_idx);
 #else
 	tunables->timer_rate = val_round;
+	tunables->prev_timer_rate = val_round;
 #endif
 	return count;
 }
@@ -2241,6 +2256,7 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 			tunables->target_loads = default_target_loads;
 			tunables->ntarget_loads = ARRAY_SIZE(default_target_loads);
 			tunables->min_sample_time = DEFAULT_MIN_SAMPLE_TIME;
+			tunables->prev_timer_rate = DEFAULT_TIMER_RATE;
 			tunables->timer_rate = usecs_to_jiffies(DEFAULT_TIMER_RATE);
 			tunables->boostpulse_duration_val = DEFAULT_MIN_SAMPLE_TIME;
 			tunables->timer_slack_val = usecs_to_jiffies(DEFAULT_TIMER_SLACK);
