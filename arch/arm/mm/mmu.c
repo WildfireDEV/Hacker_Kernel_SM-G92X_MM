@@ -709,8 +709,13 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 	} while (pmd++, addr = next, addr != end);
 }
 
+ static void __init alloc_init_pud(pgd_t *pgd, unsigned long addr,
+-	unsigned long end, unsigned long phys, const struct mem_type *type)
++				  unsigned long end, phys_addr_t phys,
++				  const struct mem_type *type)
+
 static void __init alloc_init_pud(pgd_t *pgd, unsigned long addr,
-	unsigned long end, unsigned long phys, const struct mem_type *type,
+	unsigned long end, phys_addr_t phys, const struct mem_type *type,
 	bool force_pages)
 {
 	pud_t *pud = pud_offset(pgd, addr);
