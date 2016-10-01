@@ -1,2 +1,4 @@
 vdso.lds
 vdso-offsets.h
+vdso.so.dbg
+vdso.so
