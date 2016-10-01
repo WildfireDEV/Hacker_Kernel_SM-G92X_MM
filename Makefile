@@ -402,7 +402,8 @@ KBUILD_CFLAGS		+= -Wno-error=unused-const-variable \
 									 -Wno-error=unused-value \
 									 -Wno-error=unused-result	\
 									 -Wno-error=unused-local-typedefs \
-									 -Wno-error=unused-parameter		
+									 -Wno-error=unused-parameter \
+									 -Wno-error=unused-but-set-parameter
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
