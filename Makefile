@@ -398,7 +398,8 @@ KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 # GCC 6.0 Warnings
 KBUILD_CFLAGS		+= -Wno-error=unused-const-variable \
 									 -Wno-error=unused-function		\
-
+		   				 		 -Wno-error=unused-but-set-variable	\
+									 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
 KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
