@@ -407,6 +407,12 @@ KBUILD_CFLAGS		+= -Wno-error=unused-const-variable \
 									 -Wno-error=unused-variable \
 									 -Wno-maybe-uninitialized
 
+# GCC 6.0 Errors
+KBUILD_CFLAGS	  += -Wno-error=tautological-compare \
+									 -Wno-error=misleading-indentation \
+									 -Wno-error=overflow \
+									 -Wno-error=array-bounds
+
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
 KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
