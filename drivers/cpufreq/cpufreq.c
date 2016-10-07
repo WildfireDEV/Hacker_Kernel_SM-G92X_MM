@@ -43,10 +43,10 @@ unsigned int main_cpufreq_control[8];
 unsigned int vfreq_lock = 0;
 static bool vfreq_lock_tempOFF = false;
 static unsigned int Lscreen_off_scaling_enable = 0;
-static unsigned int Lscreen_off_scaling_mhz_cl0 = 1500000;
-static unsigned int Lscreen_off_scaling_mhz_orig_cl0 = 1500000;
-static unsigned int Lscreen_off_scaling_mhz_cl1 = 2100000;
-static unsigned int Lscreen_off_scaling_mhz_orig_cl1 = 2100000;
+static unsigned int Lscreen_off_scaling_mhz_cl0 = 400000;
+static unsigned int Lscreen_off_scaling_mhz_orig_cl0 = 400000;
+static unsigned int Lscreen_off_scaling_mhz_cl1 = 800000;
+static unsigned int Lscreen_off_scaling_mhz_orig_cl1 = 800000;
 
 struct hotplug_data {
 	struct work_struct hotplug_work;
