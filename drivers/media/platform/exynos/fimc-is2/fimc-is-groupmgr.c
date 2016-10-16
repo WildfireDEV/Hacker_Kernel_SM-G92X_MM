@@ -1802,7 +1802,9 @@ int fimc_is_group_stop(struct fimc_is_groupmgr *groupmgr,
 				}
 
 				if (!retry) {
-					mgerr(" waiting(subdev stop) is fail", device, group);
+					mgerr(" waiting(subdev %d stop) is fail", device, group, subdev->id);
+					fimc_is_hw_logdump(device->interface);
+					fimc_is_hw_regdump(device->interface);
 					errcnt++;
 				}
 			}

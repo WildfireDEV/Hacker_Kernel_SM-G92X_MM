@@ -1090,6 +1090,24 @@ static int sd_prep_fn(struct request_queue *q, struct request *rq)
 		SCpnt->cmnd[6] = SCpnt->cmnd[9] = 0;
 		SCpnt->cmnd[7] = (unsigned char) (this_count >> 8) & 0xff;
 		SCpnt->cmnd[8] = (unsigned char) this_count & 0xff;
+
+#ifdef CONFIG_JOURNAL_DATA_TAG
+		if (blk_queue_journal_tag(rq->q) &&
+				(rq->cmd_flags & REQ_META) &&
+				(rq_data_dir(rq) == WRITE)) {
+#ifdef CONFIG_JOURNAL_DATA_TAG_DEBUG
+			static unsigned long log_time = 0;
+			static unsigned long tag_count = 0;
+			tag_count++;
+			if (printk_timed_ratelimit(&log_time, 5000)) {
+				printk("set ufs data tag for %lu meta flagged "
+				       "writes.\n", tag_count);
+				tag_count = 0;
+			}
+#endif
+			SCpnt->cmnd[6] |= (1 << 4);
+		}
+#endif
 	} else {
 		if (unlikely(rq->cmd_flags & REQ_FUA)) {
 			/*
@@ -3268,8 +3286,8 @@ static int sd_suspend(struct device *dev)
 	struct scsi_disk *sdkp = scsi_disk_get_from_dev(dev);
 	int ret = 0;
 
-	if (!sdkp)	/* E.g.: runtime suspend following sd_remove() */
-		return 0;
+	if (!sdkp)
+		return 0;	/* this can happen */
 
 	if (sdkp->WCE) {
 		sd_printk(KERN_NOTICE, sdkp, "Synchronizing SCSI cache\n");
@@ -3292,9 +3310,6 @@ static int sd_resume(struct device *dev)
 {
 	struct scsi_disk *sdkp = scsi_disk_get_from_dev(dev);
 	int ret = 0;
-
-	if (!sdkp)	/* E.g.: runtime resume at the start of sd_probe() */
-		return 0;
 
 	if (!sdkp->device->manage_start_stop)
 		goto done;

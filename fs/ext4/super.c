@@ -406,14 +406,11 @@ static void ext4_handle_error(struct super_block *sb, char* buf)
 		ext4_msg(sb, KERN_CRIT, "Remounting filesystem read-only");
 		sb->s_flags |= MS_RDONLY;
 	}
-	if (test_opt(sb, ERRORS_PANIC)) {
-		if (EXT4_SB(sb)->s_journal &&
-		  !(EXT4_SB(sb)->s_journal->j_flags & JBD2_REC_ERR))
-			return;
+	if (test_opt(sb, ERRORS_PANIC))
 		panic("EXT4-fs (device %s): panic! %s\n",
 			sb->s_id, buf?buf:"no message");
-        }
 }
+
 void __ext4_error(struct super_block *sb, const char *function,
 		  unsigned int line, const char *fmt, ...)
 {
@@ -622,12 +619,8 @@ void __ext4_abort(struct super_block *sb, const char *function,
 			jbd2_journal_abort(EXT4_SB(sb)->s_journal, -EIO);
 		save_error_info(sb, function, line);
 	}
-	if (test_opt(sb, ERRORS_PANIC)) {
-		if (EXT4_SB(sb)->s_journal &&
-		  !(EXT4_SB(sb)->s_journal->j_flags & JBD2_REC_ERR))
-			return;
+	if (test_opt(sb, ERRORS_PANIC))
 		panic("EXT4-fs panic from previous error\n");
-	}
 }
 
 void ext4_msg(struct super_block *sb, const char *prefix, const char *fmt, ...)
@@ -862,7 +855,6 @@ static void ext4_put_super(struct super_block *sb)
 		dump_orphan_list(sb, sbi);
 	J_ASSERT(list_empty(&sbi->s_orphan));
 
-	sync_blockdev(sb->s_bdev);
 	invalidate_bdev(sb->s_bdev);
 	if (sbi->journal_bdev && sbi->journal_bdev != sb->s_bdev) {
 		/*
@@ -2206,16 +2198,6 @@ static void ext4_orphan_cleanup(struct super_block *sb,
 
 	while (es->s_last_orphan) {
 		struct inode *inode;
-
-		/*
-		 * We may have encountered an error during cleanup; if
-		 * so, skip the rest.
-		 */
-		if (EXT4_SB(sb)->s_mount_state & EXT4_ERROR_FS) {
-			jbd_debug(1, "Skipping orphan recovery on fs with errors.\n");
-			es->s_last_orphan = 0;
-			break;
-		}
 
 		inode = ext4_orphan_get(sb, le32_to_cpu(es->s_last_orphan));
 		if (IS_ERR(inode)) {
@@ -4301,6 +4283,9 @@ out_free_orig:
 static void ext4_init_journal_params(struct super_block *sb, journal_t *journal)
 {
 	struct ext4_sb_info *sbi = EXT4_SB(sb);
+#ifdef CONFIG_JOURNAL_DATA_TAG
+	struct hd_struct *part;
+#endif
 
 	journal->j_commit_interval = sbi->s_commit_interval;
 	journal->j_min_batch_time = sbi->s_min_batch_time;
@@ -4315,6 +4300,23 @@ static void ext4_init_journal_params(struct super_block *sb, journal_t *journal)
 		journal->j_flags |= JBD2_ABORT_ON_SYNCDATA_ERR;
 	else
 		journal->j_flags &= ~JBD2_ABORT_ON_SYNCDATA_ERR;
+
+#ifdef CONFIG_JOURNAL_DATA_TAG
+	part = sb->s_bdev->bd_part;
+	if (part->info && !strncmp(part->info->volname, "USERDATA", 8)) {
+		journal->j_flags |= JBD2_JOURNAL_TAG;
+		printk("Setting journal tag on volname[%s]\n", 
+			part->info->volname);
+	} else if (!part->info && journal->j_maxlen >= 32768) {
+		/* maybe dm device &&  journal size > 128MB */
+		journal->j_flags |= JBD2_JOURNAL_TAG;
+		printk("Setting journal tag on volname[(null)] "
+		       "journal size %u MB\n", journal->j_maxlen * 4 / 1024);
+	}
+	else
+		journal->j_flags &= ~JBD2_JOURNAL_TAG;
+#endif
+
 	write_unlock(&journal->j_state_lock);
 }
 
@@ -5152,20 +5154,6 @@ static int ext4_quota_on_mount(struct super_block *sb, int type)
 					EXT4_SB(sb)->s_jquota_fmt, type);
 }
 
-static void lockdep_set_quota_inode(struct inode *inode, int subclass)
-{
-	struct ext4_inode_info *ei = EXT4_I(inode);
-
-	/* The first argument of lockdep_set_subclass has to be
-	 * *exactly* the same as the argument to init_rwsem() --- in
-	 * this case, in init_once() --- or lockdep gets unhappy
-	 * because the name of the lock is set using the
-	 * stringification of the argument to init_rwsem().
-	 */
-	(void) ei;	/* shut up clang warning if !CONFIG_LOCKDEP */
-	lockdep_set_subclass(&ei->i_data_sem, subclass);
-}
-
 /*
  * Standard function to be called on quota_on
  */
@@ -5205,12 +5193,8 @@ static int ext4_quota_on(struct super_block *sb, int type, int format_id,
 		if (err)
 			return err;
 	}
-	lockdep_set_quota_inode(path->dentry->d_inode, I_DATA_SEM_QUOTA);
-	err = dquot_quota_on(sb, type, format_id, path);
-	if (err)
-		lockdep_set_quota_inode(path->dentry->d_inode,
-					     I_DATA_SEM_NORMAL);
-	return err;
+
+	return dquot_quota_on(sb, type, format_id, path);
 }
 
 static int ext4_quota_enable(struct super_block *sb, int type, int format_id,
@@ -5236,11 +5220,8 @@ static int ext4_quota_enable(struct super_block *sb, int type, int format_id,
 
 	/* Don't account quota for quota files to avoid recursion */
 	qf_inode->i_flags |= S_NOQUOTA;
-	lockdep_set_quota_inode(qf_inode, I_DATA_SEM_QUOTA);
 	err = dquot_enable(qf_inode, type, format_id, flags);
 	iput(qf_inode);
-	if (err)
-		lockdep_set_quota_inode(qf_inode, I_DATA_SEM_NORMAL);
 
 	return err;
 }

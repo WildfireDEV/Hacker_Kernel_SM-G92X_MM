@@ -116,7 +116,6 @@ EXPORT_SYMBOL_GPL(ehci_cf_port_reset_rwsem);
 #define HUB_DEBOUNCE_STEP	  25
 #define HUB_DEBOUNCE_STABLE	 100
 
-static void hub_release(struct kref *kref);
 static int usb_reset_and_verify_device(struct usb_device *udev);
 
 static inline char *portspeed(struct usb_hub *hub, int portstatus)
@@ -141,10 +140,6 @@ struct usb_hub *usb_hub_to_struct_hub(struct usb_device *hdev)
 
 static int usb_device_supports_lpm(struct usb_device *udev)
 {
-	/* Some devices have trouble with LPM */
-	if (udev->quirks & USB_QUIRK_NO_LPM)
-		return 0;
-
 	/* USB 2.1 (and greater) devices indicate LPM support through
 	 * their USB 2.0 Extended Capabilities BOS descriptor.
 	 */
@@ -1027,6 +1022,7 @@ enum hub_activation_type {
 
 static void hub_init_func2(struct work_struct *ws);
 static void hub_init_func3(struct work_struct *ws);
+static void hub_release(struct kref *kref);
 
 static void hub_activate(struct usb_hub *hub, enum hub_activation_type type)
 {
@@ -1053,7 +1049,6 @@ static void hub_activate(struct usb_hub *hub, enum hub_activation_type type)
 		goto init3;
 	}
 	kref_get(&hub->kref);
-
 	/* The superspeed hub except for root hub has to use Hub Depth
 	 * value as an offset into the route string to locate the bits
 	 * it uses to determine the downstream port number. So hub driver
@@ -3001,14 +2996,14 @@ int usb_port_suspend(struct usb_device *udev, pm_message_t msg)
 	int		port1 = udev->portnum;
 	int		status;
 	bool		really_suspend = true;
-#ifndef CONFIG_MDM_HSIC_PM
+
 	/* enable remote wakeup when appropriate; this lets the device
 	 * wake up the upstream hub (including maybe the root hub).
 	 *
 	 * NOTE:  OTG devices may issue remote wakeup (or SRP) even when
 	 * we don't explicitly enable it here.
 	 */
-	if (udev->do_remote_wakeup) {
+	if (udev->do_remote_wakeup && !(udev->quirks & USB_QUIRK_IGNORE_REMOTE_WAKEUP)){
 		if (!hub_is_superspeed(hub->hdev)) {
 			status = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
 					USB_REQ_SET_FEATURE, USB_RECIP_DEVICE,
@@ -3038,7 +3033,7 @@ int usb_port_suspend(struct usb_device *udev, pm_message_t msg)
 				goto err_wakeup;
 		}
 	}
-#endif
+
 	/* disable USB2 hardware LPM */
 	if (udev->usb2_hw_lpm_enabled == 1)
 		usb_set_usb2_hardware_lpm(udev, 0);
@@ -3072,12 +3067,11 @@ int usb_port_suspend(struct usb_device *udev, pm_message_t msg)
 	 * descendants is enabled for remote wakeup.
 	 */
 	else if (PMSG_IS_AUTO(msg) || wakeup_enabled_descendants(udev) > 0) {
-#ifdef CONFIG_MDM_HSIC_PM
-		status = 0;
-#else
-		status = set_port_feature(hub->hdev, port1,
-				USB_PORT_FEAT_SUSPEND);
-#endif
+		if (udev->quirks & USB_QUIRK_IGNORE_REMOTE_WAKEUP)
+			status = 0;
+		else
+			status = set_port_feature(hub->hdev, port1,
+					USB_PORT_FEAT_SUSPEND);
 	} else {
 		really_suspend = false;
 		status = 0;
@@ -3109,9 +3103,7 @@ int usb_port_suspend(struct usb_device *udev, pm_message_t msg)
 						USB_INTRF_FUNC_SUSPEND, 0,
 						NULL, 0, USB_CTRL_SET_TIMEOUT);
 		}
-#ifndef CONFIG_MDM_HSIC_PM
 err_wakeup:
-#endif
 
 		/* System sleep transitions should never fail */
 		if (!PMSG_IS_AUTO(msg))
@@ -3346,10 +3338,10 @@ int usb_port_resume(struct usb_device *udev, pm_message_t msg)
 		dev_dbg(hub->intfdev, "can't resume port %d, status %d\n",
 				port1, status);
 	} else {
-		/* drive resume for USB_RESUME_TIMEOUT msec */
+		/* drive resume for at least 20 msec */
 		dev_dbg(&udev->dev, "usb %sresume\n",
 				(PMSG_IS_AUTO(msg) ? "auto-" : ""));
-		msleep(USB_RESUME_TIMEOUT);
+		msleep(25);
 
 		/* Virtual root hubs can trigger on GET_PORT_STATUS to
 		 * stop resume signaling.  Then finish the resume
@@ -4227,13 +4219,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 						r = -EPROTO;
 					break;
 				}
-				/*
-				 * Some devices time out if they are powered on
-				 * when already connected. They need a second
-				 * reset. But only on the first attempt,
-				 * lest we get into a time out/reset loop
-				 */
-				if (r == 0  || (r == -ETIMEDOUT && j == 0))
+				if (r == 0)
 					break;
 			}
 			udev->descriptor.bMaxPacketSize0 =
@@ -4360,8 +4346,6 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 			retval = -ENOMSG;
 		goto fail;
 	}
-
-	usb_detect_quirks(udev);
 
 	if (udev->wusb == 0 && le16_to_cpu(udev->descriptor.bcdUSB) >= 0x0201) {
 		retval = usb_get_bos_descriptor(udev);
@@ -4618,6 +4602,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 		if (status < 0)
 			goto loop;
 
+		usb_detect_quirks(udev);
 		if (udev->quirks & USB_QUIRK_DELAY_INIT)
 			msleep(1000);
 

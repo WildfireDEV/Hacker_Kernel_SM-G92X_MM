@@ -492,6 +492,13 @@ static long fimg2d_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 
 		mutex_lock(&ctrl->drvlock);
+		if (atomic_read(&ctrl->drvact) == act) {
+			fimg2d_info("Duplicated %s request is ignored\n",
+				act == DRV_ACT ? "DRV_ACT" : "DRV_DEACT");
+			mutex_unlock(&ctrl->drvlock);
+			break;
+		}
+
 		atomic_set(&ctrl->drvact, act);
 		if (act == DRV_ACT) {
 			fimg2d_power_control(ctrl, FIMG2D_PW_OFF);

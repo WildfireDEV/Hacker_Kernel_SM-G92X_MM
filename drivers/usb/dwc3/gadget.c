@@ -27,6 +27,10 @@
 #include <linux/list.h>
 #include <linux/dma-mapping.h>
 
+#ifdef CONFIG_USB_NOTIFY_PROC_LOG
+#include <linux/usblog_proc_notify.h>
+#endif
+
 #include <linux/usb/ch9.h>
 #include <linux/usb/gadget.h>
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
@@ -341,8 +345,6 @@ int dwc3_send_gadget_generic_command(struct dwc3 *dwc, int cmd, u32 param)
 		if (!(reg & DWC3_DGCMD_CMDACT)) {
 			dev_vdbg(dwc->dev, "Command Complete --> %d\n",
 					DWC3_DGCMD_STATUS(reg));
-			if (DWC3_DGCMD_STATUS(reg))
-				return -EINVAL;
 			return 0;
 		}
 
@@ -379,8 +381,6 @@ int dwc3_send_gadget_ep_cmd(struct dwc3 *dwc, unsigned ep,
 		if (!(reg & DWC3_DEPCMD_CMDACT)) {
 			dev_vdbg(dwc->dev, "Command Complete --> %d\n",
 					DWC3_DEPCMD_STATUS(reg));
-			if (DWC3_DEPCMD_STATUS(reg))
-				return -EINVAL;
 			return 0;
 		}
 
@@ -933,7 +933,8 @@ static void dwc3_prepare_trbs(struct dwc3_ep *dep, bool starting)
 
 				if (i == (request->num_mapped_sgs - 1) ||
 						sg_is_last(s)) {
-					if (list_empty(&dep->request_list))
+					if (list_is_last(&req->list,
+							&dep->request_list))
 						last_one = true;
 					chain = false;
 				}
@@ -951,9 +952,6 @@ static void dwc3_prepare_trbs(struct dwc3_ep *dep, bool starting)
 				if (last_one)
 					break;
 			}
-
-			if (last_one)
-				break;
 		} else {
 			dma = req->request.dma;
 			length = req->request.length;
@@ -2697,6 +2695,10 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
 	case DWC3_DEVICE_EVENT_RESET:
 		printk(KERN_DEBUG"usb: %s RESET \n",__func__);
 		dwc3_gadget_reset_interrupt(dwc);
+#ifdef CONFIG_USB_NOTIFY_PROC_LOG
+		store_usblog_notify(NOTIFY_USBSTATE,
+					(void *)"USB_STATE=RESET", NULL);
+#endif
 		break;
 	case DWC3_DEVICE_EVENT_CONNECT_DONE:
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE

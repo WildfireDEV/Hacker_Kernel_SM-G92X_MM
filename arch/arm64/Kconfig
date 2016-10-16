@@ -65,6 +65,7 @@ config ARM64
 	select RTC_LIB
 	select SPARSE_IRQ
 	select SYSCTL_EXCEPTION_TRACE
+	select SECCOMP
 	help
 	  ARM 64-bit (AArch64) Linux support.
 
@@ -85,10 +86,6 @@ config STACKTRACE_SUPPORT
 
 config HAVE_LATENCYTOP_SUPPORT
 	def_bool y
-
-config ILLEGAL_POINTER_VALUE
-	hex
-	default 0xdead000000000000
 
 config LOCKDEP_SUPPORT
 	def_bool y

@@ -12,7 +12,7 @@ fw-external-y := $(subst ",,$(CONFIG_EXTRA_FIRMWARE))
 # There are three cases to care about:
 # 1. Building kernel with CONFIG_FIRMWARE_IN_KERNEL=y -- $(fw-shipped-y) should
 #    include the firmware files to include, according to .config
-# 2. 'make modules_install', which will install firmware for modules, and
+# 2. 'make modules_install', which will install firmware for modules, and 
 #    _also_ for the in-kernel drivers when CONFIG_FIRMWARE_IN_KERNEL=n
 # 3. 'make firmware_install', which installs all firmware, unconditionally.
 
@@ -142,6 +142,13 @@ fw-shipped-$(CONFIG_YAM) += yam/1200.bin yam/9600.bin
 fw-shipped-$(CONFIG_EPEN_WACOM_W9012) += epen/W9012_T.bin epen/W9012_TB.bin
 fw-shipped-$(CONFIG_EPEN_WACOM_W9014) += epen/W9014_NOBLE.bin
 
+TSPFIRMWARE_DIRECTORY = firmware/tsp_melfas
+ifeq ($(shell test -d $(TSPFIRMWARE_DIRECTORY) && echo yes),yes)
+fw-shipped-$(CONFIG_TOUCHSCREEN_MELFAS_MMS449) += tsp_melfas/mms449_a8x.fw 
+else
+$(warning '$(TSPFIRMWARE_DIRECTORY)' directory dose not exist)
+endif
+
 TSPFIRMWARE_DIRECTORY = firmware/tsp_synaptics
 ifeq ($(shell test -d $(TSPFIRMWARE_DIRECTORY) && echo yes),yes)
 fw-shipped-$(CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_RMI) += tsp_synaptics/synaptics_b0_h.fw \
@@ -156,7 +163,7 @@ TSPFIRMWARE_DIRECTORY = firmware/tsp_stm
 ifeq ($(shell test -d $(TSPFIRMWARE_DIRECTORY) && echo yes),yes)
 fw-shipped-$(CONFIG_TOUCHSCREEN_FTS) += tsp_stm/stm_tb_integ.fw tsp_stm/stm_z2a.fw \
 	tsp_stm/stm_z2i.fw tsp_stm/stm_z1.fw tsp_stm/stm_za.fw
-fw-shipped-$(CONFIG_TOUCHSCREEN_FTS5AD56) += tsp_stm/noble.fw \
+fw-shipped-$(CONFIG_TOUCHSCREEN_FTS5AD56) += tsp_stm/stm_z1.fw tsp_stm/noble.fw \
 	tsp_stm/zen.fw
 else
 $(warning '$(TSPFIRMWARE_DIRECTORY)' directory dose not exist)
@@ -170,8 +177,10 @@ $(warning '$(TSPFIRMWARE_DIRECTORY)' directory dose not exist)
 endif
 
 fw-shipped-$(CONFIG_KEYBOARD_ABOV_TOUCH) += abov/abov_noble.fw abov/abov_zen.fw \
-							abov/abov_valley.fw
+							abov/abov_valley.fw abov/abov_a8x.fw
 fw-shipped-$(CONFIG_KEYBOARD_ABOV_TOUCH_FOLDER) += abov/abov_tk_royce.fw
+fw-shipped-$(CONFIG_KEYBOARD_ABOV_FT16XX_TOUCH_VALLEY) += abov/abov_valley.fw
+fw-shipped-$(CONFIG_KEYBOARD_TC300K) += coreriver/tc305k_a8x.fw
 fw-shipped-$(CONFIG_KEYBOARD_CYPRESS_TOUCH_MBR31X5) += cypress/cypress_zerof.fw \
 							cypress/cypress_vlte.fw cypress/cypress_noble.fw
 fw-shipped-$(CONFIG_KEYBOARD_CYPRESS_TOUCH_20075) += cypress/cypress_k.fw
@@ -197,6 +206,8 @@ ifdef CONFIG_SENSORS_SSP_STM
 		fw-shipped-y += ssp_stm_royce.fw ssp_crashed.fw
 	endif
 endif
+
+fw-shipped-$(CONFIG_SENSORS_SSP_STM32) += ssp_stmf410_a8xe.fw
 
 # Wireless charger
 #fw-shipped-$(CONFIG_WIRELESS_FIRMWARE_UPDATE) += idt/p9220_otp.bin idt/p9220_sram.bin
@@ -282,7 +293,7 @@ $(obj)/%: $(obj)/%.ihex | $(objtree)/$(obj)/$$(dir %)
 # Don't depend on ihex2fw if we're installing and it already exists.
 # Putting it after | in the dependencies doesn't seem sufficient when
 # we're installing after a cross-compile, because ihex2fw has dependencies
-# on stuff like /usr/lib/gcc/ppc64-redhat-linux/4.3.0/include/stddef.h and
+# on stuff like /usr/lib/gcc/ppc64-redhat-linux/4.3.0/include/stddef.h and 
 # thus wants to be rebuilt. Which it can't be, if the prebuilt kernel tree
 # is exported read-only for someone to run 'make install'.
 ifeq ($(INSTALL):$(wildcard $(obj)/ihex2fw),install:$(obj)/ihex2fw)

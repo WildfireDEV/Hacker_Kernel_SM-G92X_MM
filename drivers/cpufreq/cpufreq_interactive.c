@@ -262,9 +262,6 @@ static inline cputime64_t get_cpu_idle_time(
 	unsigned int cpu,
 	cputime64_t *wall,
 	bool io_is_busy)
-
-#define DOWN_LOW_LOAD_THRESHOLD 5
-
 {
 	u64 idle_time = get_cpu_idle_time_us(cpu, wall);
 
@@ -741,8 +738,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 			if (new_freq < tunables->hispeed_freq)
 				new_freq = tunables->hispeed_freq;
 		}
-	} else if (cpu_load <= DOWN_LOW_LOAD_THRESHOLD) {
-		new_freq = pcpu->policy->cpuinfo.min_freq;
 	} else {
 		new_freq = choose_freq(pcpu, loadadjfreq);
 		if (new_freq > tunables->hispeed_freq &&

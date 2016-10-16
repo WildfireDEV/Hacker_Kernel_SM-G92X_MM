@@ -428,9 +428,9 @@ int blk_alloc_devt(struct hd_struct *part, dev_t *devt)
 	/* allocate ext devt */
 	idr_preload(GFP_KERNEL);
 
-	spin_lock_bh(&ext_devt_lock);
+	spin_lock(&ext_devt_lock);
 	idx = idr_alloc(&ext_devt_idr, part, 0, NR_EXT_DEVT, GFP_NOWAIT);
-	spin_unlock_bh(&ext_devt_lock);
+	spin_unlock(&ext_devt_lock);
 
 	idr_preload_end();
 	if (idx < 0)
@@ -455,9 +455,9 @@ void blk_free_devt(dev_t devt)
 		return;
 
 	if (MAJOR(devt) == BLOCK_EXT_MAJOR) {
-		spin_lock_bh(&ext_devt_lock);
+		spin_lock(&ext_devt_lock);
 		idr_remove(&ext_devt_idr, blk_mangle_minor(MINOR(devt)));
-		spin_unlock_bh(&ext_devt_lock);
+		spin_unlock(&ext_devt_lock);
 	}
 }
 
@@ -715,13 +715,13 @@ struct gendisk *get_gendisk(dev_t devt, int *partno)
 	} else {
 		struct hd_struct *part;
 
-		spin_lock_bh(&ext_devt_lock);
+		spin_lock(&ext_devt_lock);
 		part = idr_find(&ext_devt_idr, blk_mangle_minor(MINOR(devt)));
 		if (part && get_disk(part_to_disk(part))) {
 			*partno = part->partno;
 			disk = part_to_disk(part);
 		}
-		spin_unlock_bh(&ext_devt_lock);
+		spin_unlock(&ext_devt_lock);
 	}
 
 	return disk;
@@ -853,7 +853,6 @@ static void disk_seqf_stop(struct seq_file *seqf, void *v)
 	if (iter) {
 		class_dev_iter_exit(iter);
 		kfree(iter);
-		seqf->private = NULL;
 	}
 }
 
@@ -1095,16 +1094,9 @@ int disk_expand_part_tbl(struct gendisk *disk, int partno)
 	struct disk_part_tbl *old_ptbl = disk->part_tbl;
 	struct disk_part_tbl *new_ptbl;
 	int len = old_ptbl ? old_ptbl->len : 0;
-	int i, target;
+	int target = partno + 1;
 	size_t size;
-
-	/*
-	 * check for int overflow, since we can get here from blkpg_ioctl()
-	 * with a user passed 'partno'.
-	 */
-	target = partno + 1;
-	if (target < 0)
-		return -EINVAL;
+	int i;
 
 	/* disk_max_parts() is zero during initialization, ignore if so */
 	if (disk_max_parts(disk) && target > disk_max_parts(disk))
@@ -1203,6 +1195,7 @@ static int diskstats_show(struct seq_file *seqf, void *v)
 	struct hd_struct *hd;
 	char buf[BDEVNAME_SIZE];
 	int cpu;
+	u64 uptime;
 
 	/*
 	if (&disk_to_dev(gp)->kobj.entry == block_class.devices.next)
@@ -1217,8 +1210,11 @@ static int diskstats_show(struct seq_file *seqf, void *v)
 		cpu = part_stat_lock();
 		part_round_stats(cpu, hd);
 		part_stat_unlock();
+		uptime = ktime_to_ns(ktime_get());
+		uptime /= 1000000; /* in ms */
 		seq_printf(seqf, "%4d %7d %s %lu %lu %lu "
-			   "%u %lu %lu %lu %u %u %u %u\n",
+			   "%u %lu %lu %lu %u %u %u %u "
+			   "%lu %lu %lu %lu %llu %lu.%03lu\n",
 			   MAJOR(part_devt(hd)), MINOR(part_devt(hd)),
 			   disk_name(gp, hd->partno, buf),
 			   part_stat_read(hd, ios[READ]),
@@ -1231,7 +1227,14 @@ static int diskstats_show(struct seq_file *seqf, void *v)
 			   jiffies_to_msecs(part_stat_read(hd, ticks[WRITE])),
 			   part_in_flight(hd),
 			   jiffies_to_msecs(part_stat_read(hd, io_ticks)),
-			   jiffies_to_msecs(part_stat_read(hd, time_in_queue))
+			   jiffies_to_msecs(part_stat_read(hd, time_in_queue)),
+			   part_stat_read(hd, discard_ios),
+			   part_stat_read(hd, discard_sectors),
+			   part_stat_read(hd, flush_ios),
+			   gp->queue->flush_ios,
+			   gp->queue->in_flight_time / USEC_PER_MSEC,
+			   (unsigned long)(uptime / 1000),
+			   (unsigned long)(uptime % 1000)
 			);
 	}
 	disk_part_iter_exit(&piter);
