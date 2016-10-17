@@ -4,8 +4,7 @@ SUBLEVEL = 103
 EXTRAVERSION =
 NAME = TOSSUG Baby Fish
 
-#TOOLCHAIN_DIR = $(CURDIR)/toolchain/UBERTC-aarch64-linux-android-5.3/bin/aarch64-linux-android-
-TOOLCHAIN_DIR = /home/kerneldev/android/toolchains/UBERTC-aarch64-linux-android-5.3/bin/aarch64-linux-android-
+TOOLCHAIN_DIR = /home/builder/toolchains/6.0/bin/aarch64-linux-android-
 
 ifdef CONFIG_WITH_CCACHE
 ccache := ccache
@@ -357,7 +356,7 @@ ifdef CONFIG_WITH_CCACHE
 	ifdef CONFIG_WITH_GRAPHITE
 		CC		= $(CCACHE) $(GRAPHITE) $(CROSS_COMPILE)gcc
 	else
-		CC		= $(CCACHE) $(CROSS_COMPILE)gcc	
+		CC		= $(CCACHE) $(CROSS_COMPILE)gcc
 	endif
 else
 	ifdef CONFIG_WITH_GRAPHITE
@@ -396,17 +395,17 @@ endif
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 ifdef CONFIG_WITH_GRAPHITE
-CFLAGS_MODULE   = $(GRAPHITE) 
-AFLAGS_MODULE   = $(GRAPHITE) 
-LDFLAGS_MODULE  = $(GRAPHITE) 
+CFLAGS_MODULE   = $(GRAPHITE)
+AFLAGS_MODULE   = $(GRAPHITE)
+LDFLAGS_MODULE  = $(GRAPHITE)
 CFLAGS_KERNEL	= $(GRAPHITE) -fsingle-precision-constant
-AFLAGS_KERNEL	= $(GRAPHITE) 
+AFLAGS_KERNEL	= $(GRAPHITE)
 else
-CFLAGS_MODULE   = 
-AFLAGS_MODULE   = 
-LDFLAGS_MODULE  = 
+CFLAGS_MODULE   =
+AFLAGS_MODULE   =
+LDFLAGS_MODULE  =
 CFLAGS_KERNEL	= -fsingle-precision-constant
-AFLAGS_KERNEL	= 
+AFLAGS_KERNEL	=
 endif
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
@@ -906,7 +905,7 @@ ifdef CONFIG_BUILD_DOCSRC
 endif
 	+$(call if_changed,link-vmlinux)
 
-# The actual objects are generated when descending, 
+# The actual objects are generated when descending,
 # make sure no implicit rule kicks in
 $(sort $(vmlinux-deps)): $(vmlinux-dirs) ;
 
