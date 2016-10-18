@@ -16,7 +16,6 @@
 #include <linux/debugfs.h>
 #ifdef CONFIG_SEC_PM_DEBUG
 #include <linux/fb.h>
-#include <linux/screen_state.h>
 #endif
 #include <trace/events/power.h>
 
@@ -37,13 +36,6 @@ static atomic_t combined_event_count = ATOMIC_INIT(0);
 
 #define IN_PROGRESS_BITS	(sizeof(int) * 4)
 #define MAX_IN_PROGRESS		((1 << IN_PROGRESS_BITS) - 1)
-
-bool is_screen_off = false;
-
-bool screen_off()
-{
-	return is_screen_off;
-}
 
 static void split_counters(unsigned int *cnt, unsigned int *inpr)
 {
@@ -503,6 +495,7 @@ static int fb_state_change(struct notifier_block *nb, unsigned long val,
 	unsigned int blank;
 	struct wakeup_source *ws;
 	ktime_t now;
+	bool is_screen_off;
 	unsigned long flags;
 
 	if (val != FB_EVENT_BLANK && val != FB_R_EARLY_EVENT_BLANK)
