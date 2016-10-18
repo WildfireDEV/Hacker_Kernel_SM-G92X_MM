@@ -71,7 +71,7 @@ CONFIG_EXYNOS7420_CPU_OVERCLOCK=y
 #
 # Debug support for DIAG
 #
-CONFIG_FRANDOM=y
+# CONFIG_FRANDOM is not set
 
 #
 # File systems
