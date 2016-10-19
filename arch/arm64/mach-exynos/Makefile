@@ -5,6 +5,8 @@
 #
 # Licensed under GPLv2
 
+KBUILD_CFLAGS	+=-O3
+
 obj-y				:=
 obj-m				:=
 obj-n				:=

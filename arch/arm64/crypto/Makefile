@@ -8,6 +8,8 @@
 # published by the Free Software Foundation.
 #
 
+KBUILD_CFLAGS	+=-O3
+
 #Keep this at the top
 obj-$(CONFIG_CRYPTO_FIPS) += first_file_asm.o
 

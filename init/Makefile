@@ -2,6 +2,8 @@
 # Makefile for the linux kernel.
 #
 
+KBUILD_CFLAGS	+=-O3
+
 obj-y                          := main.o version.o mounts.o
 
 ifeq ($(CONFIG_TIMA_RKP), y)

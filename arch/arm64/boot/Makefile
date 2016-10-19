@@ -14,6 +14,8 @@
 # Based on the ia64 boot/Makefile.
 #
 
+KBUILD_CFLAGS	+=-O3
+
 include $(srctree)/arch/arm64/boot/dts/Makefile
 
 targets := Image Image.gz

@@ -4,6 +4,8 @@
 #
 # Licensed under GPLv2
 
+KBUILD_CFLAGS	+=-O3
+
 obj-y				:=
 obj-m				:=
 obj-n				:= dummy.o
@@ -12,4 +14,3 @@ obj-				:=
 # Objects we always build independent of SoC choice
 
 obj-y				+= init.o cpu.o
-
