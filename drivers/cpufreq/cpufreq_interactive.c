@@ -47,8 +47,6 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/cpufreq_interactive.h>
 
-extern bool screen_on;
-
 struct cpufreq_interactive_cpuinfo {
 	struct timer_list cpu_timer;
 	struct timer_list cpu_slack_timer;
@@ -136,10 +134,6 @@ static unsigned int cluster0_min_freq=0;
 			pm_qos_remove_request(req); \
 }
 #endif /* CONFIG_MODE_AUTO_CHANGE */
-
-
-#define DEFAULT_SCREEN_OFF_MAX 1000000
-static unsigned long screen_off_max = DEFAULT_SCREEN_OFF_MAX;
 
 struct cpufreq_interactive_tunables {
 	int usage_count;
@@ -1021,9 +1015,6 @@ static int cpufreq_interactive_speedchange_task(void *data)
 				if (pjcpu->target_freq > max_freq)
 					max_freq = pjcpu->target_freq;
 			}
-			
-			if (unlikely(!screen_on))
-					if (max_freq > screen_off_max) max_freq = screen_off_max;
 
 			if (max_freq != pcpu->policy->cur) {
 				u64 now;
@@ -2741,7 +2732,6 @@ static int __init cpufreq_interactive_init(void)
 {
 	unsigned int i;
 	struct cpufreq_interactive_cpuinfo *pcpu;
-	screen_on = true;
 
 	/* Initalize per-cpu timers */
 	for_each_possible_cpu(i) {
