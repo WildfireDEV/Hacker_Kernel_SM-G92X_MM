@@ -194,7 +194,7 @@ CLEANCONFIG()
 CHANGELOG()
 {
 	echo "Make Changelog from Github Repo"
-	github_changelog_generator HRTKernel/Hacker_Kernel_SM-G92X_MM
+	github_changelog_generator WildfireDEV/Hacker_Kernel_SM-G92X_MM_Revival
 	echo "Done!"
 }
 
