@@ -7,7 +7,7 @@ Hacker-Echoe
 #Zip-Name
 hacker-echoe-kernel
 #Version
--V14-WSM
+-V15-WSM
 #Toolchain
 UBERTC-aarch64-linux-android-5.3/bin/aarch64-linux-android-
 #Su Version
