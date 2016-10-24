@@ -1294,23 +1294,31 @@ while true; do
     echo ""
     echo "a = Build G920F with sound mod"
     echo "b = Build G920F without sound mod"
-    echo "c = Build G925F with sound mod"
-    echo "d = Build G925F without sound mod"
+    echo "c = Build G920F with sound mod and with Note 7 ramdisk"
+    echo "d = Build G920F without sound mod and with Note 7 ramdisk"
+    echo "e = Build G925F with sound mod"
+    echo "f = Build G925F without sound mod"
     echo ""
     echo "q = Back to Main Menu"
     echo ""
-    read -p "Do you wish to build? = " abcdq
-    case $abcdq in
+    read -p "Do you wish to build? = " abcdefq
+    case $abcdefq in
         [Aa]* )
         G920F;;
         
         [Bb]* )
         G920FWSM;;
-        
+
         [Cc]* )
-        G925F;;
+        G920FN7;;
         
         [Dd]* )
+        G920FWSMN7;;
+        
+        [Ee]* )
+        G925F;;
+        
+        [Ff]* )
         G925FWSM;;
             
         [Qq]* )
