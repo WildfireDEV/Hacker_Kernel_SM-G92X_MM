@@ -548,6 +548,62 @@ REPACK_KERNEL_G920F()
 	
 }
 
+REPACK_KERNEL_G920FN7()
+{	
+	echo ""
+	echo "=============================================="
+	echo "START: REPACK_KERNEL"
+	echo "=============================================="
+	echo ""
+	      echo "$KERNEL_NAME_G920FN7" 
+	if [ -e $BUILD_KERNEL_DIR/arch/arm64/boot/Image ]; then
+	      cp -r $KERNEL_ZIMG $BOOTIMG_DIR_2/Image
+	      cd build_image
+	      mkdir backup_image
+	      cp -r Image backup_image/g920fzImage
+	      cp -r Image boot/zImage
+	      rm output_kernel/*.zip
+	      echo "Making boot.img ..."
+	      #$DTBTOOL -o dt.img -s $BOARD_KERNEL_PAGESIZE -p ../scripts/dtc/ ../arch/arm64/boot/dts/ | sleep 1	      
+	      chmod a+r dt/$DT_G920F
+	      cp dt/$DT_G920F boot/dt.img
+	      ./mkboot boot boot.img	      
+	      echo "Making zip ..."
+	      SEANDROIDENFORCE
+	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
+	      cd $FLASH_ZIP_FILES
+	      zip -r $KERNEL_NAME_G920F.zip META-INF system kernel data
+	      mv $KERNEL_NAME_G920F.zip $OUTPUT_DIR
+	      echo "Making cleaning ..."
+	      cd ..
+	      rm dt/$DT_G920F
+	      rm boot.img
+	      rm Image
+	      rm zip_files/kernel/boot.img
+	      rm boot/zImage
+	      rm boot/dt.img
+	      cd $KERNEL_DIR
+	      CHANGELOG
+	      echo "All Done!"
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: REPACK_KERNEL"
+	      echo "================================="
+	      echo ""
+	      
+	else
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: FAIL KERNEL BUILD!"
+	      echo "================================="
+	      echo ""
+	      exit 0;
+	fi;
+	
+}
+
 REPACK_KERNEL_G920FWSM()
 {	
 	echo ""
@@ -556,6 +612,62 @@ REPACK_KERNEL_G920FWSM()
 	echo "=============================================="
 	echo ""
 	      echo "$KERNEL_NAME_WSM_G920F" 
+	if [ -e $BUILD_KERNEL_DIR/arch/arm64/boot/Image ]; then
+	      cp -r $KERNEL_ZIMG $BOOTIMG_DIR_2/Image
+	      cd build_image
+	      mkdir backup_image
+	      cp -r Image backup_image/g920fwsmzImage
+	      cp -r Image boot/zImage
+	      rm output_kernel/*.zip
+	      echo "Making boot.img ..."
+	      SEANDROIDENFORCE
+	      #$DTBTOOL -o dt.img -s $BOARD_KERNEL_PAGESIZE -p ../scripts/dtc/ ../arch/arm64/boot/dts/ | sleep 1	      
+	      chmod a+r dt/$DT_G920F
+	      cp dt/$DT_G920F boot/dt.img
+	      ./mkboot boot boot.img	      
+	      echo "Making zip ..."
+	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
+	      cd $FLASH_ZIP_FILES
+	      zip -r $KERNEL_NAME_WSM_G920F.zip META-INF system kernel data
+	      mv $KERNEL_NAME_WSM_G920F.zip $OUTPUT_DIR
+	      echo "Making cleaning ..."
+	      cd ..
+	      rm dt/$DT_G920F
+	      rm boot.img
+	      rm Image
+	      rm zip_files/kernel/boot.img
+	      rm boot/zImage
+	      rm boot/dt.img
+	      cd $KERNEL_DIR
+	      CHANGELOG
+	      echo "All Done!"
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: REPACK_KERNEL"
+	      echo "================================="
+	      echo ""
+	      
+	else
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: FAIL KERNEL BUILD!"
+	      echo "================================="
+	      echo ""
+	      exit 0;
+	fi;
+	
+}
+
+REPACK_KERNEL_G920FWSMN7()
+{	
+	echo ""
+	echo "=============================================="
+	echo "START: REPACK_KERNEL"
+	echo "=============================================="
+	echo ""
+	      echo "$KERNEL_NAME_WSM_G920FN7" 
 	if [ -e $BUILD_KERNEL_DIR/arch/arm64/boot/Image ]; then
 	      cp -r $KERNEL_ZIMG $BOOTIMG_DIR_2/Image
 	      cd build_image
