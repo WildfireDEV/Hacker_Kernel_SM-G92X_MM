@@ -397,6 +397,25 @@ BUILD_KERNEL_G920F()
 	echo ""
 }
 
+BUILD_KERNEL_G920FN7()
+{	
+	CLEAN
+	echo ""
+	echo "=============================================="
+	echo "START: BUILD_KERNEL"
+	echo "=============================================="
+	echo ""
+	echo "$HACKER_VER_920FN7"
+	export LOCALVERSION=-`echo $HACKER_VER_920FN7`
+	BUILD_BASE
+	START_BUILD
+	echo ""
+	echo "================================="
+	echo "END: BUILD_KERNEL"
+	echo "================================="
+	echo ""
+}
+
 BUILD_KERNEL_G925F()
 {	
 	CLEAN
@@ -426,6 +445,25 @@ BUILD_KERNEL_G920FWSM()
 	echo ""
 	echo "$HACKER_VER_920FWSM"
 	export LOCALVERSION=-`echo $HACKER_VER_920FWSM`
+	BUILD_BASE
+	START_BUILD
+	echo ""
+	echo "================================="
+	echo "END: BUILD_KERNEL"
+	echo "================================="
+	echo ""
+}
+
+BUILD_KERNEL_G920FWSMN7()
+{	
+	CLEAN
+	echo ""
+	echo "=============================================="
+	echo "START: BUILD_KERNEL"
+	echo "=============================================="
+	echo ""
+	echo "$HACKER_VER_920FWSMN7"
+	export LOCALVERSION=-`echo $HACKER_VER_920FWSMN7`
 	BUILD_BASE
 	START_BUILD
 	echo ""
