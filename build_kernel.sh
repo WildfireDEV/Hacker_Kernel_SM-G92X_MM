@@ -1112,6 +1112,41 @@ rm -rf ./buildg920f.log
 ) 2>&1	 | tee -a ./buildg920f.log
 }
 
+G920FN7()
+{
+rm -rf ./buildg920fn7.log
+(
+	START_TIME=`date +%s`
+	BUILD_DATE=`date +%m-%d-%Y`
+        echo ""
+        echo "Build G920F with sound mod and Note 7 Ramdisk"
+        sleep 2
+        rm -rf $BI_DIR/dt/$DT_G920F
+        rm -rf $BI_DIR/boot
+	SOUND_BASE_CLEAN
+        cp $KERNEL_DIR/build/dt/$DT_G920F $BI_DIR/dt/$DT_G920F
+        cp $KERNEL_DIR/build/boot/boot-g920fn7.img $BI_DIR/boot.img
+        cd $BI_DIR
+        ./mkboot boot.img boot
+	rm boot.img
+	rm Image
+	rm zip_files/kernel/boot.img
+	rm boot/zImage
+	rm boot/dt.img	
+        cd $KERNEL_DIR
+        cp $KERNEL_DIR/$CONFIG_DIR/$CONFIG_G920F $KERNEL_DIR/$CONFIG_DIR/$CONFIG
+	WITHSOUNDMOD
+	PATCH_RAMDISK
+        sleep 1
+	BUILD_KERNEL_G920FN7
+	REPACK_KERNEL_G920FN7
+
+	END_TIME=`date +%s`
+	let "ELAPSED_TIME=$END_TIME-$START_TIME"
+	echo "Total compile time is $ELAPSED_TIME seconds"
+) 2>&1	 | tee -a ./buildg920fn7.log
+}
+
 G920FWSM()
 {
 rm -rf ./buildg920fwsm.log
@@ -1145,6 +1180,41 @@ rm -rf ./buildg920fwsm.log
 	let "ELAPSED_TIME=$END_TIME-$START_TIME"
 	echo "Total compile time is $ELAPSED_TIME seconds"
 ) 2>&1	 | tee -a ./buildg920fwsm.log
+}
+
+G920FWSMN7()
+{
+rm -rf ./buildg920fwsmn7.log
+(
+	START_TIME=`date +%s`
+	BUILD_DATE=`date +%m-%d-%Y`
+        echo ""
+        echo "Build G920F without sound mod and with Note 7 Ramdisk"
+        sleep 2
+        rm -rf $BI_DIR/dt/$DT_G920F
+        rm -rf $BI_DIR/boot
+	SOUND_BASE_CLEAN
+        cp $KERNEL_DIR/build/dt/$DT_G920F $BI_DIR/dt/$DT_G920F
+        cp $KERNEL_DIR/build/boot/boot-g920fn7.img $BI_DIR/boot.img
+        cd $BI_DIR
+        ./mkboot boot.img boot
+	rm boot.img
+	rm Image
+	rm zip_files/kernel/boot.img
+	rm boot/zImage
+	rm boot/dt.img	
+        cd $KERNEL_DIR
+        cp $KERNEL_DIR/$CONFIG_DIR/$CONFIG_G920F $KERNEL_DIR/$CONFIG_DIR/$CONFIG
+	WITHOUTSOUNDMOD
+	PATCH_RAMDISK
+        sleep 1
+	BUILD_KERNEL_G920FWSMN7
+	REPACK_KERNEL_G920FWSMN7
+
+	END_TIME=`date +%s`
+	let "ELAPSED_TIME=$END_TIME-$START_TIME"
+	echo "Total compile time is $ELAPSED_TIME seconds"
+) 2>&1	 | tee -a ./buildg920fwsmn7.log
 }
 
 G925F()
