@@ -40,13 +40,16 @@ CONFIG=hacker_defconfig
 CONFIG_G920F=exynos7420-zeroflte_defconfig
 CONFIG_G925F=exynos7420-zerolte_defconfig
 DEVICE_VER_G920F=`sed -n '17p' thehacker911`
-DEVICE_VER_G925F=`sed -n '18p' thehacker911`
+DEVICE_VER_G920FN7=`sed -n '18p' thehacker911`
+DEVICE_VER_G925F=`sed -n '19p' thehacker911`
 HACKER_VER_920F="$BASE_VER$DEVICE_VER_G920F$VER"
 HACKER_VER_920FWSM="$BASE_VER$DEVICE_VER_G920F$VERWSM"
 HACKER_VER_925F="$BASE_VER$DEVICE_VER_G925F$VER"
 HACKER_VER_925FWSM="$BASE_VER$DEVICE_VER_G925F$VERWSM"
 KERNEL_NAME_G920F="$ZIP_VER$DEVICE_VER_G920F$VER"
+KERNEL_NAME_G920FN7="$ZIP_VER$DEVICE_VER_G920FN7$VER"
 KERNEL_NAME_WSM_G920F="$ZIP_VER$DEVICE_VER_G920F$VERWSM"
+KERNEL_NAME_WSM_G920FN7="$ZIP_VER$DEVICE_VER_G920FN7$VERWSM"
 KERNEL_NAME_G925F="$ZIP_VER$DEVICE_VER_G925F$VER"
 KERNEL_NAME_WSM_G925F="$ZIP_VER$DEVICE_VER_G925F$VERWSM"
 RAMDISK=$BI_DIR/boot/ramdisk
@@ -572,8 +575,8 @@ REPACK_KERNEL_G920FN7()
 	      SEANDROIDENFORCE
 	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
 	      cd $FLASH_ZIP_FILES
-	      zip -r $KERNEL_NAME_G920F.zip META-INF system kernel data
-	      mv $KERNEL_NAME_G920F.zip $OUTPUT_DIR
+	      zip -r $KERNEL_NAME_G920FN7.zip META-INF system kernel data
+	      mv $KERNEL_NAME_G920FN7.zip $OUTPUT_DIR
 	      echo "Making cleaning ..."
 	      cd ..
 	      rm dt/$DT_G920F
@@ -684,8 +687,8 @@ REPACK_KERNEL_G920FWSMN7()
 	      echo "Making zip ..."
 	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
 	      cd $FLASH_ZIP_FILES
-	      zip -r $KERNEL_NAME_WSM_G920F.zip META-INF system kernel data
-	      mv $KERNEL_NAME_WSM_G920F.zip $OUTPUT_DIR
+	      zip -r $KERNEL_NAME_WSM_G920FN7.zip META-INF system kernel data
+	      mv $KERNEL_NAME_WSM_G920FN7.zip $OUTPUT_DIR
 	      echo "Making cleaning ..."
 	      cd ..
 	      rm dt/$DT_G920F
