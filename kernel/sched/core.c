@@ -5,8 +5,8 @@
  *
  *  Copyright (C) 1991-2002  Linus Torvalds
  *
- *  Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
- *
+ * Copyright (c) 2014, NVIDIA CORPORATION. All rights reserved.
+ * 
  *  1996-12-23  Modified by Dave Grothe to fix bugs in semaphores and
  *		make semaphores SMP safe
  *  1998-11-19	Implemented schedule_timeout() and related stuff
@@ -431,7 +431,15 @@ static void __hrtick_start(void *arg)
 void hrtick_start(struct rq *rq, u64 delay)
 {
 	struct hrtimer *timer = &rq->hrtick_timer;
-	ktime_t time = ktime_add_ns(timer->base->get_time(), delay);
+	ktime_t time;
+	s64 delta;
+	
+	/*
+	 * Don't schedule slices shorter than 10000ns, that just
+	 * doesn't make sense and can cause timer DoS.
+	 */
+	delta = max_t(s64, delay, 10000LL);
+	time = ktime_add_ns(timer->base->get_time(), delta);
 
 	hrtimer_set_expires(timer, time);
 
@@ -1132,7 +1140,7 @@ unsigned long wait_task_inactive(struct task_struct *p, long match_state)
 		 */
 		while (task_running(rq, p)) {
 			if (match_state && unlikely(cpu_relaxed_read_long
-				(&(p->state)) != match_state))
+			    (&(p->state)) != match_state))
 				return 0;
 			cpu_read_relax();
 		}
@@ -1458,7 +1466,7 @@ static void sched_ttwu_pending(void)
 
 void scheduler_ipi(void)
 {
-	if (llist_empty_relaxed(&this_rq()->wake_list)
+	if (llist_empty(&this_rq()->wake_list)
 			&& !tick_nohz_full_cpu(smp_processor_id())
 			&& !got_nohz_idle_kick())
 		return;
@@ -1634,7 +1642,6 @@ out:
  */
 int wake_up_process(struct task_struct *p)
 {
-	WARN_ON(task_is_stopped_or_traced(p));
 	return try_to_wake_up(p, TASK_NORMAL, 0);
 }
 EXPORT_SYMBOL(wake_up_process);
@@ -2881,7 +2888,7 @@ u64 scheduler_tick_max_deferment(void)
 	if (time_before_eq(next, now))
 		return 0;
 
-	return jiffies_to_usecs(next - now) * NSEC_PER_USEC;
+	return (u64)jiffies_to_usecs(next - now) * NSEC_PER_USEC;
 }
 #endif
 
@@ -3905,7 +3912,7 @@ int idle_cpu(int cpu)
 		return 0;
 
 #ifdef CONFIG_SMP
-	if (!llist_empty_relaxed(&rq->wake_list))
+	if (!llist_empty(&rq->wake_list))
 		return 0;
 #endif
 
