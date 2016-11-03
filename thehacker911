@@ -16,7 +16,8 @@ UBERTC-aarch64-linux-android-5.3/bin/aarch64-linux-android-
 -S6-Userbuild
 -g920f_stock
 -g920f_note7
--g925f
+-g925f_stock
+-g925f_note7
 #UBERTC-aarch64-linux-android-6.0/bin/aarch64-linux-android-
 #
 #
