@@ -42,6 +42,7 @@ CONFIG_G925F=exynos7420-zerolte_defconfig
 DEVICE_VER_G920F=`sed -n '17p' thehacker911`
 DEVICE_VER_G920FN7=`sed -n '18p' thehacker911`
 DEVICE_VER_G925F=`sed -n '19p' thehacker911`
+DEVICE_VER_G925FN7=`sed -n '20p' thehacker911`
 HACKER_VER_920F="$BASE_VER$DEVICE_VER_G920F$VER"
 HACKER_VER_920FWSM="$BASE_VER$DEVICE_VER_G920F$VERWSM"
 HACKER_VER_925F="$BASE_VER$DEVICE_VER_G925F$VER"
@@ -51,7 +52,9 @@ KERNEL_NAME_G920FN7="$ZIP_VER$DEVICE_VER_G920FN7$VER"
 KERNEL_NAME_WSM_G920F="$ZIP_VER$DEVICE_VER_G920F$VERWSM"
 KERNEL_NAME_WSM_G920FN7="$ZIP_VER$DEVICE_VER_G920FN7$VERWSM"
 KERNEL_NAME_G925F="$ZIP_VER$DEVICE_VER_G925F$VER"
+KERNEL_NAME_G925FN7="$ZIP_VER$DEVICE_VER_G925FN7$VER"
 KERNEL_NAME_WSM_G925F="$ZIP_VER$DEVICE_VER_G925F$VERWSM"
+KERNEL_NAME_WSM_G925FN7="$ZIP_VER$DEVICE_VER_G925FN7$VERWSM"
 RAMDISK=$BI_DIR/boot/ramdisk
 PATCH=$KERNEL_DIR/build/patch;
 
@@ -815,6 +818,62 @@ REPACK_KERNEL_G925F()
 	
 }
 
+REPACK_KERNEL_G925FN7()
+{	
+	echo ""
+	echo "=============================================="
+	echo "START: REPACK_KERNEL"
+	echo "=============================================="
+	echo ""
+	      echo "$KERNEL_NAME_G925FN7" 
+	if [ -e $BUILD_KERNEL_DIR/arch/arm64/boot/Image ]; then
+	      cp -r $KERNEL_ZIMG $BOOTIMG_DIR_2/Image
+	      cd build_image
+	      mkdir backup_image
+	      cp -r Image backup_image/g925fzImage
+	      cp -r Image boot/zImage
+	      rm output_kernel/*.zip
+	      echo "Making boot.img ..."
+	      #$DTBTOOL -o dt.img -s $BOARD_KERNEL_PAGESIZE -p ../scripts/dtc/ ../arch/arm64/boot/dts/ | sleep 1	      
+	      chmod a+r dt/$DT_G925F
+	      cp dt/$DT_G925F boot/dt.img
+	      ./mkboot boot boot.img	      
+	      echo "Making zip ..."
+	      SEANDROIDENFORCE
+	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
+	      cd $FLASH_ZIP_FILES
+	      zip -r $KERNEL_NAME_G925FN7.zip META-INF system kernel data
+	      mv $KERNEL_NAME_G925FN7.zip $OUTPUT_DIR
+	      echo "Making cleaning ..."
+	      cd ..
+	      rm dt/$DT_G925F
+	      rm boot.img
+	      rm Image
+	      rm zip_files/kernel/boot.img
+	      rm boot/zImage
+	      rm boot/dt.img
+	      cd $KERNEL_DIR
+	      CHANGELOG
+	      echo "All Done!"
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: REPACK_KERNEL"
+	      echo "================================="
+	      echo ""
+	      
+	else
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: FAIL KERNEL BUILD!"
+	      echo "================================="
+	      echo ""
+	      exit 0;
+	fi;
+	
+}
+
 REPACK_KERNEL_G925FWSM()
 {	
 	echo ""
@@ -841,6 +900,62 @@ REPACK_KERNEL_G925FWSM()
 	      cd $FLASH_ZIP_FILES
 	      zip -r $KERNEL_NAME_WSM_G925F.zip META-INF system kernel data
 	      mv $KERNEL_NAME_WSM_G925F.zip $OUTPUT_DIR
+	      echo "Making cleaning ..."
+	      cd ..
+	      rm dt/$DT_G925F
+	      rm boot.img
+	      rm Image
+	      rm zip_files/kernel/boot.img
+	      rm boot/zImage
+	      rm boot/dt.img
+	      cd $KERNEL_DIR
+	      CHANGELOG
+	      echo "All Done!"
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: REPACK_KERNEL"
+	      echo "================================="
+	      echo ""
+	      
+	else
+	
+	      echo ""
+	      echo "================================="
+	      echo "END: FAIL KERNEL BUILD!"
+	      echo "================================="
+	      echo ""
+	      exit 0;
+	fi;
+	
+}
+
+REPACK_KERNEL_G925FWSMN7()
+{	
+	echo ""
+	echo "=============================================="
+	echo "START: REPACK_KERNEL"
+	echo "=============================================="
+	echo ""
+	      echo "$KERNEL_NAME_WSM_G925FN7" 
+	if [ -e $BUILD_KERNEL_DIR/arch/arm64/boot/Image ]; then
+	      cp -r $KERNEL_ZIMG $BOOTIMG_DIR_2/Image
+	      cd build_image
+	      mkdir backup_image
+	      cp -r Image backup_image/g925fwsmzImage
+	      cp -r Image boot/zImage
+	      rm output_kernel/*.zip
+	      echo "Making boot.img ..."
+	      #$DTBTOOL -o dt.img -s $BOARD_KERNEL_PAGESIZE -p ../scripts/dtc/ ../arch/arm64/boot/dts/ | sleep 1	      
+	      chmod a+r dt/$DT_G925F
+	      cp dt/$DT_G925F boot/dt.img
+	      ./mkboot boot boot.img	      
+	      echo "Making zip ..."
+	      SEANDROIDENFORCE
+	      cp $BOOTIMG $FLASH_ZIP_FILES/kernel/boot.img
+	      cd $FLASH_ZIP_FILES
+	      zip -r $KERNEL_NAME_WSM_G925FN7.zip META-INF system kernel data
+	      mv $KERNEL_NAME_WSM_G925FN7.zip $OUTPUT_DIR
 	      echo "Making cleaning ..."
 	      cd ..
 	      rm dt/$DT_G925F
