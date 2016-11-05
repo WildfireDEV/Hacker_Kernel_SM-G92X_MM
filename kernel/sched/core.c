@@ -1141,7 +1141,6 @@ unsigned long wait_task_inactive(struct task_struct *p, long match_state)
 		while (task_running(rq, p)) {
 			if (match_state && unlikely(cpu_relaxed_read_long
 			    (&(p->state)) != match_state))
-				(&(p->state)) != match_state))
 				return 0;
 			cpu_read_relax();
 		}
