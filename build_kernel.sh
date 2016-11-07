@@ -190,6 +190,7 @@ CLEANCONFIG()
 	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_PM_DEBUG is not set";
 	remove_line $CONFIG_DIR/$CONFIG "CONFIG_HAVE_64BIT_ALIGNED_ACCESS=y";
 	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_SCHED_HMP_LITTLE_PACKING is not set";
+	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_DEBUG_INFO_REDUCED is not set";
 	echo ""
 	echo "=============================================="
 	echo "END: CLEAN CONFIG"
