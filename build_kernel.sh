@@ -192,6 +192,7 @@ CLEANCONFIG()
 	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_SCHED_HMP_LITTLE_PACKING is not set";
 	remove_line $CONFIG_DIR/$CONFIG "# CONFIG_DEBUG_INFO_REDUCED is not set";
 	remove_line $CONFIG_DIR/$CONFIG "CONFIG_CGROUP_DEBUG=y";
+	remove_line $CONFIG_DIR/$CONFIG "CONFIG_SCHED_DEBUG=y";
 	echo ""
 	echo "=============================================="
 	echo "END: CLEAN CONFIG"
