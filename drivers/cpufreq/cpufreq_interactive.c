@@ -90,6 +90,7 @@ static bool suspended = false;
 static unsigned int default_target_loads[] = {DEFAULT_TARGET_LOAD};
 
 #define DEFAULT_TIMER_RATE (20 * USEC_PER_MSEC)
+#define SCREEN_OFF_TIMER_RATE ((unsigned long)(60 * USEC_PER_MSEC))
 #define DEFAULT_ABOVE_HISPEED_DELAY DEFAULT_TIMER_RATE
 static unsigned int default_above_hispeed_delay[] = {
 	DEFAULT_ABOVE_HISPEED_DELAY };
@@ -156,6 +157,7 @@ struct cpufreq_interactive_tunables {
 	 * The sample rate of the timer used to increase frequency
 	 */
 	unsigned long timer_rate;
+	unsigned long prev_timer_rate;
 	/*
 	 * Wait this long before raising speed above hispeed, by default a
 	 * single timer interval.
@@ -429,7 +431,7 @@ static unsigned int choose_freq(struct cpufreq_interactive_cpuinfo *pcpu,
 
 		if (cpufreq_frequency_table_target(
 			    pcpu->policy, pcpu->freq_table, loadadjfreq / tl,
-			    CPUFREQ_RELATION_L, &index))
+			    CPUFREQ_RELATION_C, &index))
 			break;
 		freq = pcpu->freq_table[index].frequency;
 
@@ -471,7 +473,7 @@ static unsigned int choose_freq(struct cpufreq_interactive_cpuinfo *pcpu,
 				 */
 				if (cpufreq_frequency_table_target(
 					    pcpu->policy, pcpu->freq_table,
-					    freqmin + 1, CPUFREQ_RELATION_L,
+					    freqmin + 1, CPUFREQ_RELATION_C,
 					    &index))
 					break;
 				freq = pcpu->freq_table[index].frequency;
@@ -751,6 +753,17 @@ static void cpufreq_interactive_timer(unsigned long data)
 	}
 #endif
 
+	if (suspended
+ 		&& tunables->timer_rate != tunables->prev_timer_rate)
+ 		tunables->timer_rate = tunables->prev_timer_rate;
+ 	else if (!suspended
+ 		&& tunables->timer_rate != SCREEN_OFF_TIMER_RATE) {
+		tunables->prev_timer_rate = tunables->timer_rate;
+		tunables->timer_rate
+			= max(tunables->timer_rate,
+ 				SCREEN_OFF_TIMER_RATE);
+	}
+
 	if ((cpu_load >= tunables->go_hispeed_load || tunables->boosted) && !suspended) {
 		if (pcpu->policy->cur < tunables->hispeed_freq) {
 			new_freq = tunables->hispeed_freq;
@@ -779,7 +792,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 	}
 
 	if (cpufreq_frequency_table_target(pcpu->policy, pcpu->freq_table,
-					   new_freq, CPUFREQ_RELATION_L,
+					   new_freq, CPUFREQ_RELATION_C,
 					   &index)) {
 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
 		goto rearm;
@@ -1471,6 +1484,7 @@ static ssize_t store_timer_rate(struct cpufreq_interactive_tunables *tunables,
 	spin_unlock_irqrestore(&tunables->param_index_lock, flags_idx);
 #else
 	tunables->timer_rate = val_round;
+	tunables->prev_timer_rate = val_round;
 #endif
 	return count;
 }
@@ -2241,6 +2255,7 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 			tunables->target_loads = default_target_loads;
 			tunables->ntarget_loads = ARRAY_SIZE(default_target_loads);
 			tunables->min_sample_time = DEFAULT_MIN_SAMPLE_TIME;
+			tunables->prev_timer_rate = DEFAULT_TIMER_RATE;
 			tunables->timer_rate = usecs_to_jiffies(DEFAULT_TIMER_RATE);
 			tunables->boostpulse_duration_val = DEFAULT_MIN_SAMPLE_TIME;
 			tunables->timer_slack_val = usecs_to_jiffies(DEFAULT_TIMER_SLACK);
@@ -2439,7 +2454,7 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 					policy->max, CPUFREQ_RELATION_H);
 		else if (policy->min > policy->cur)
 			__cpufreq_driver_target(policy,
-					policy->min, CPUFREQ_RELATION_L);
+					policy->min, CPUFREQ_RELATION_C);
 		for_each_cpu(j, policy->cpus) {
 			pcpu = &per_cpu(cpuinfo, j);
 

@@ -208,6 +208,11 @@ static u32 vendor_oui = CONFIG_DHD_SET_RANDOM_MAC_VAL;
 
 #include <wl_android.h>
 
+#include <linux/moduleparam.h>
+
+static int wl_divide = 3;
+module_param(wl_divide, int, 0644);
+
 /* Maximum STA per radio */
 #define DHD_MAX_STA     32
 
@@ -2493,17 +2498,41 @@ void dhd_enable_packet_filter(int value, dhd_pub_t *dhd)
 #endif /* PKT_FILTER_SUPPORT */
 }
 
+#ifdef CONFIG_BCMDHD_WIFI_PM
+/*static int wifi_pm = 0;
+module_param(wifi_pm, int, 0755);
+EXPORT_SYMBOL(wifi_pm);
+*/
+int dtim_awake = 0;
+module_param(dtim_awake, int, 0660);
+
+int dtim_suspended = 0;
+module_param(dtim_suspended, int, 0660);
+
+int wifi_pm_awake = PM_FAST;
+module_param(wifi_pm_awake, int, 0660);
+
+int wifi_pm_suspended = PM_MAX;
+module_param(wifi_pm_suspended, int, 0660);
+#endif
+
 static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 {
-#ifndef SUPPORT_PM2_ONLY
-	int power_mode = PM_MAX;
-#endif /* SUPPORT_PM2_ONLY */
+#ifdef CONFIG_BCMDHD_WIFI_PM
+int power_mode = wifi_pm_awake;
+#else
+int power_mode = PM_MAX;
+#endif
 #ifdef SUPPORT_SENSORHUB
 	uint32 shub_msreq;
 #endif /* SUPPORT_SENSORHUB */
 	/* wl_pkt_filter_enable_t	enable_parm; */
 	char iovbuf[32];
+#ifdef CONFIG_BCMDHD_WIFI_PM
+	int bcn_li_dtim = dtim_awake; /* Default bcn_li_dtim in resume mode is 0 but honor the override instead */
+#else
 	int bcn_li_dtim = 0; /* Default bcn_li_dtim in resume mode is 0 */
+#endif
 #ifdef DHD_USE_EARLYSUSPEND
 #ifdef CUSTOM_BCN_TIMEOUT_IN_SUSPEND
 	int bcn_timeout = 0;
@@ -2538,6 +2567,7 @@ static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 	dhdinfo = dhd->info;
 #endif /* PASS_ALL_MCAST_PKTS */
 
+	pr_info("[dhd] dhd_set_suspend\n");
 	DHD_TRACE(("%s: enter, value = %d in_suspend=%d\n",
 		__FUNCTION__, value, dhd->in_suspend));
 
@@ -2553,8 +2583,11 @@ static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 #ifdef PKT_FILTER_SUPPORT
 				dhd->early_suspended = 1;
 #endif
+#ifdef CONFIG_BCMDHD_WIFI_PM
+				power_mode = wifi_pm_suspended;
+#endif
 				/* Kernel suspended */
-				DHD_ERROR(("%s: force extra Suspend setting \n", __FUNCTION__));
+				DHD_INFO(("%s: force extra Suspend setting \n", __FUNCTION__));
 
 #ifdef SUPPORT_SENSORHUB
 			shub_msreq = 1;
@@ -2569,10 +2602,14 @@ static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 			}
 #endif /* SUPPORT_SENSORHUB */
 
+#ifdef CONFIG_BCMDHD_WIFI_PM
+				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode, sizeof(power_mode), TRUE, 0);
+#else
 #ifndef SUPPORT_PM2_ONLY
 				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
 				                 sizeof(power_mode), TRUE, 0);
 #endif /* SUPPORT_PM2_ONLY */
+#endif
 
 #ifdef PKT_FILTER_SUPPORT
 				/* Enable packet filter,
@@ -2602,7 +2639,8 @@ static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 					bcn_li_dtim = 0;
 				} else
 #endif /* WLTDLS */
-				bcn_li_dtim = dhd_get_suspend_bcn_li_dtim(dhd);
+				bcn_li_dtim = dtim_suspended;				// ff: use user-definable DTIM
+				pr_info("[dhd] suspend bcn_li_dtim: %i\n", bcn_li_dtim);
 				bcm_mkiovar("bcn_li_dtim", (char *)&bcn_li_dtim,
 					4, iovbuf, sizeof(iovbuf));
 				if (dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf),
@@ -2659,7 +2697,8 @@ static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 				dhd->early_suspended = 0;
 #endif
 				/* Kernel resumed  */
-				DHD_ERROR(("%s: Remove extra suspend setting \n", __FUNCTION__));
+				DHD_INFO(("%s: Remove extra suspend setting \n", __FUNCTION__));
+				pr_info("[dhd] resume power_mode: %i\n", power_mode);
 
 #ifdef SUPPORT_SENSORHUB
 				shub_msreq = 0;
@@ -2688,6 +2727,10 @@ static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 				power_mode = PM_FAST;
 				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
 				                 sizeof(power_mode), TRUE, 0);
+#endif
+#ifdef CONFIG_BCMDHD_WIFI_PM
+				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode, sizeof(power_mode), TRUE, 0);
+#else
 #endif /* SUPPORT_PM2_ONLY */
 #ifdef PKT_FILTER_SUPPORT
 				/* disable pkt filter */
@@ -2707,6 +2750,7 @@ static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 				/* restore pre-suspend setting for dtim_skip */
 				bcm_mkiovar("bcn_li_dtim", (char *)&bcn_li_dtim,
 					4, iovbuf, sizeof(iovbuf));
+				pr_info("[dhd] resume bcn_li_dtim: %i\n", bcn_li_dtim);
 
 				dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf), TRUE, 0);
 #ifdef DHD_USE_EARLYSUSPEND
@@ -2761,6 +2805,7 @@ static int dhd_suspend_resume_helper(struct dhd_info *dhd, int val, int force)
 	DHD_PERIM_LOCK(dhdp);
 
 	/* Set flag when early suspend was called */
+	pr_info("[dhd] dhd_suspend_resume_helper\n");
 	dhdp->in_suspend = val;
 	if ((force || !dhdp->suspend_disable_flag) &&
 		dhd_support_sta_mode(dhdp))
@@ -7966,6 +8011,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	dhd->suspend_bcn_li_dtim = CUSTOM_SUSPEND_BCN_LI_DTIM;
 	DHD_TRACE(("Enter %s\n", __FUNCTION__));
 	dhd->op_mode = 0;
+	power_mode = wifi_pm_awake;
 #ifdef CUSTOMER_HW4_DEBUG
 	if (!dhd_validate_chipid(dhd)) {
 		DHD_ERROR(("%s: CONFIG_BCMXXX and CHIP ID(%x) is mismatched\n",
@@ -8298,6 +8344,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	sec_control_pm(dhd, &power_mode);
 #else
 	/* Set PowerSave mode */
+	pr_info("[dhd] dhd_set_multicast_list\n");
 	dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode, sizeof(power_mode), TRUE, 0);
 #endif /* DHD_PM_CONTROL_FROM_FILE */
 
@@ -8759,8 +8806,10 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	/* Setup filter to allow only unicast */
 	dhd->pktfilter[DHD_UNICAST_FILTER_NUM] = "100 0 0 0 0x01 0x00";
 #endif /* BLOCK_IPV6_PACKET */
-
+	/* apply APP pktfilter */
+	dhd->pktfilter[DHD_ARP_FILTER_NUM] = "105 0 0 12 0xFFFF 0x0806";
 #ifdef PASS_IPV4_SUSPEND
+	dhd->pktfilter_count = 6;
 	dhd->pktfilter[DHD_MDNS_FILTER_NUM] = "104 0 0 0 0xFFFFFF 0x01005E";
 #else
 	/* Add filter to pass multicastDNS packet and NOT filter out as Broadcast */
@@ -8768,7 +8817,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 #endif /* PASS_IPV4_SUSPEND */
 
 #ifdef GAN_LITE_NAT_KEEPALIVE_FILTER
-	dhd->pktfilter_count = 4;
+	dhd->pktfilter_count = 5;
 	/* Setup filter to block broadcast and NAT Keepalive packets */
 	/* discard all broadcast packets */
 	dhd->pktfilter[DHD_UNICAST_FILTER_NUM] = "100 0 0 0 0xffffff 0xffffff";
@@ -11610,10 +11659,10 @@ int dhd_os_wake_lock_timeout(dhd_pub_t *pub)
 #ifdef CONFIG_HAS_WAKELOCK
 		if (dhd->wakelock_rx_timeout_enable)
 			wake_lock_timeout(&dhd->wl_rxwake,
-				msecs_to_jiffies(dhd->wakelock_rx_timeout_enable));
+				msecs_to_jiffies(dhd->wakelock_rx_timeout_enable)/wl_divide);
 		if (dhd->wakelock_ctrl_timeout_enable)
 			wake_lock_timeout(&dhd->wl_ctrlwake,
-				msecs_to_jiffies(dhd->wakelock_ctrl_timeout_enable));
+				msecs_to_jiffies(dhd->wakelock_ctrl_timeout_enable)/wl_divide);
 #endif
 		dhd->wakelock_rx_timeout_enable = 0;
 		dhd->wakelock_ctrl_timeout_enable = 0;

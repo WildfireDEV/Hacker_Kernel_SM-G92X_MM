@@ -2,8 +2,8 @@
  * Generic helpers for smp ipi calls
  *
  * (C) Jens Axboe <jens.axboe@oracle.com> 2008
+ * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
  */
-#include <linux/irq_work.h>
 #include <linux/rcupdate.h>
 #include <linux/rculist.h>
 #include <linux/kernel.h>
@@ -13,9 +13,9 @@
 #include <linux/gfp.h>
 #include <linux/smp.h>
 #include <linux/cpu.h>
+#include <asm/relaxed.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/smp.h>
-#include <asm/relaxed.h>
 
 #include "smpboot.h"
 
@@ -216,14 +216,6 @@ void generic_smp_call_function_single_interrupt(void)
 		if (csd_flags & CSD_FLAG_LOCK)
 			csd_unlock(csd);
 	}
-
-	/*
-	 * Handle irq works queued remotely by irq_work_queue_on().
-	 * Smp functions above are typically synchronous so they
-	 * better run first since some other CPUs may be busy waiting
-	 * for them.
-	 */
-	irq_work_run();
 }
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct call_single_data, csd_data);
