@@ -2241,7 +2241,6 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 			tunables->target_loads = default_target_loads;
 			tunables->ntarget_loads = ARRAY_SIZE(default_target_loads);
 			tunables->min_sample_time = DEFAULT_MIN_SAMPLE_TIME;
-			tunables->prev_timer_rate = DEFAULT_TIMER_RATE;
 			tunables->timer_rate = usecs_to_jiffies(DEFAULT_TIMER_RATE);
 			tunables->boostpulse_duration_val = DEFAULT_MIN_SAMPLE_TIME;
 			tunables->timer_slack_val = usecs_to_jiffies(DEFAULT_TIMER_SLACK);
