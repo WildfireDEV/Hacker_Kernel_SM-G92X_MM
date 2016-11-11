@@ -106,6 +106,10 @@ extern void gen_pool_set_algo(struct gen_pool *pool, genpool_algo_t algo,
 extern unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
 		unsigned long start, unsigned int nr, void *data);
 
+extern unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+		unsigned long size, unsigned long start, unsigned int nr,
+		void *data);
+
 extern unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
 		unsigned long start, unsigned int nr, void *data);
 
@@ -113,23 +117,8 @@ extern struct gen_pool *devm_gen_pool_create(struct device *dev,
 		int min_alloc_order, int nid);
 extern struct gen_pool *dev_get_gen_pool(struct device *dev);
 
-u64 __must_check
-gen_pool_alloc_aligned(struct gen_pool *pool, size_t size,
-                       unsigned alignment_order);
-
-/**
- * gen_pool_alloc() - allocate special memory from the pool
- * @pool:       Pool to allocate from.
- * @size:       Number of bytes to allocate from the pool.
- *
- * Allocate the requested number of bytes from the specified pool.
- * Uses a first-fit algorithm.
- */
-static inline u64 __must_check
-gen_pool_alloc(struct gen_pool *pool, size_t size)
-{
-        return gen_pool_alloc_aligned(pool, size, 0);
-}
+bool addr_in_gen_pool(struct gen_pool *pool, unsigned long start,
+			size_t size);
 
 #ifdef CONFIG_OF
 extern struct gen_pool *of_get_named_gen_pool(struct device_node *np,
