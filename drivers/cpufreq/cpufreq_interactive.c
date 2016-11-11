@@ -34,7 +34,6 @@
 #include <linux/kernel_stat.h>
 #include <linux/pm_qos.h>
 #include <linux/powersuspend.h>
-#include <linux/display_state.h>
 #include <asm/cputime.h>
 
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
