@@ -22,7 +22,6 @@ cat << CTAG
 			`. /res/synapse/config.json.generate.audio`
 			`. /res/synapse/config.json.generate.doze`
 			`. /res/synapse/config.json.generate.cortex`
-			`. /res/synapse/config.json.generate.misc`
 			`. /res/synapse/config.json.generate.bus`
 			`. /res/synapse/config.json.generate.io`
 			`. /res/synapse/config.json.generate.storage`
@@ -56,7 +55,6 @@ cat << CTAG
 			`. /res/synapse/config.json.generate.led`
 			`. /res/synapse/config.json.generate.doze`
 			`. /res/synapse/config.json.generate.cortex`
-			`. /res/synapse/config.json.generate.misc`
 			`. /res/synapse/config.json.generate.bus`
 			`. /res/synapse/config.json.generate.io`
 			`. /res/synapse/config.json.generate.storage`
