@@ -94,6 +94,29 @@ cortexbrain_kernel)
     echo Enabled
   fi
   ;;
+cortexbrain_doze_auto)
+  P=/res/synapse/hrtkernel/cortexbrain_doze_auto
+  if [ ! -z "$2" ]; then
+  if [ "$2" == Stock ]; then
+    echo 0 > $P
+	$BB sync;
+	dumpsys deviceidle step
+  elif [ $2 == Aggressive ]; then
+    echo 1 > $P
+	$BB sync;
+	dumpsys deviceidle force-idle
+  elif [ $2 == Auto ]; then
+    echo 2 > $P
+  fi; fi
+  copy=$(cat $P)
+  if [ "$copy" == 0 ]; then
+    echo Stock
+  elif [ "$copy" == 1 ]; then
+    echo Aggressive
+  elif [ "$copy" == 2 ]; then
+    echo Auto
+  fi
+  ;;
 esac
 
 $BB mount -t rootfs -o remount,ro rootfs;
