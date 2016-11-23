@@ -21,6 +21,8 @@ CONFIG_BCMDHD_WIFI_PM=y
 # Kernel hacking
 #
 CONFIG_DEBUG_INFO_REDUCED=y
+# CONFIG_SCHED_DEBUG is not set
+
 
 #
 # CD-ROM/DVD Filesystems
