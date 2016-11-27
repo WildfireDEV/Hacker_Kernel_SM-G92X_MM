@@ -1,10 +1,10 @@
-#!/sbin/busybox sh
+#!/system/bin/sh
 
-BB=/sbin/busybox;
+BB=/system/xbin/busybox;
 
 cat << CTAG
 {
-    name:CortexBrain,
+    name:CORTEX,
     elements:[
 	{ SLiveLabel:{
 		title:"CortexBrain Status",
@@ -42,6 +42,16 @@ cat << CTAG
 		height:1
 	}},
 	{ SOptionList:{
+		title:"Media Manager",
+		description:"Setting to 'Auto' will disable Media Manager service when the screen is OFF & auto enable when the screen is ON.\n",
+		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_media_manager)"),
+		action:"cortex cortexbrain_media_manager",
+		values:[Disabled, Enabled, Auto,]
+	}},
+	{ SSpacer:{
+		height:1
+	}},
+	{ SOptionList:{
 		title:"System-Tweaks",
 		description:"Enable or Disable System-Tweaks. Possible increase in UI speed. Disabling requires REBOOT.\n",
 		default:$(echo "$(/res/synapse/actions/cortex cortexbrain_system)"),
@@ -61,6 +71,6 @@ cat << CTAG
 	{ SSpacer:{
 		height:1
 	}},
-	]
+    ]
 }
 CTAG
