@@ -1828,7 +1828,7 @@ static int bcm4773_resume( struct spi_device *spi )
 	}
 	spin_unlock_irqrestore( &bport->irq_lock, flags);
 
-	wake_lock_timeout(&g_bport->bcm4773_wake_lock, HZ/2);
+	wake_lock_timeout(&g_bport->bcm4773_wake_lock, HZ/4);
 
 	return 0;
 }
