@@ -856,20 +856,20 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		if (!pte_file(pte)) {
 			swp_entry_t entry = pte_to_swp_entry(pte);
 
-			if (likely(!non_swap_entry(entry))) {
-				if (swap_duplicate(entry) < 0)
-					return entry.val;
+			if (swap_duplicate(entry) < 0)
+				return entry.val;
 
-				/* make sure dst_mm is on swapoff's mmlist. */
-				if (unlikely(list_empty(&dst_mm->mmlist))) {
-					spin_lock(&mmlist_lock);
-					if (list_empty(&dst_mm->mmlist))
-						list_add(&dst_mm->mmlist,
-							 &src_mm->mmlist);
-					spin_unlock(&mmlist_lock);
-				}
+			/* make sure dst_mm is on swapoff's mmlist. */
+			if (unlikely(list_empty(&dst_mm->mmlist))) {
+				spin_lock(&mmlist_lock);
+				if (list_empty(&dst_mm->mmlist))
+					list_add(&dst_mm->mmlist,
+						 &src_mm->mmlist);
+				spin_unlock(&mmlist_lock);
+			}
+			if (likely(!non_swap_entry(entry)))
 				rss[MM_SWAPENTS]++;
-			} else if (is_migration_entry(entry)) {
+			else if (is_migration_entry(entry)) {
 				page = migration_entry_to_page(entry);
 
 				if (PageAnon(page))
@@ -1608,7 +1608,7 @@ split_fallthrough:
 	}
 	if ((flags & FOLL_NUMA) && pte_numa(pte))
 		goto no_page;
-	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags))
+	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) 
 		goto unlock;
 
 	page = vm_normal_page(vma, address, pte);
@@ -1916,7 +1916,7 @@ long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 				 */
 				if ((ret & VM_FAULT_WRITE) &&
 				    !(vma->vm_flags & VM_WRITE))
-					foll_flags |= FOLL_COW;
+					foll_flags |= FOLL_COW; 
 
 				cond_resched();
 			}
@@ -3183,8 +3183,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
 	mem_cgroup_commit_charge_swapin(page, ptr);
 
 	swap_free(entry);
-	if ((PageSwapCache(page) && vm_swap_full(page_swap_info(page))) ||
-		(vma->vm_flags & VM_LOCKED) || PageMlocked(page))
+	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
 		try_to_free_swap(page);
 	unlock_page(page);
 	if (page != swapcache) {
@@ -3247,7 +3246,7 @@ static inline int check_stack_guard_page(struct vm_area_struct *vma, unsigned lo
 		if (prev && prev->vm_end == address)
 			return prev->vm_flags & VM_GROWSDOWN ? 0 : -ENOMEM;
 
-		return expand_downwards(vma, address - PAGE_SIZE);
+		expand_downwards(vma, address - PAGE_SIZE);
 	}
 	if ((vma->vm_flags & VM_GROWSUP) && address + PAGE_SIZE == vma->vm_end) {
 		struct vm_area_struct *next = vma->vm_next;
@@ -3256,7 +3255,7 @@ static inline int check_stack_guard_page(struct vm_area_struct *vma, unsigned lo
 		if (next && next->vm_start == address + PAGE_SIZE)
 			return next->vm_flags & VM_GROWSUP ? 0 : -ENOMEM;
 
-		return expand_upwards(vma, address + PAGE_SIZE);
+		expand_upwards(vma, address + PAGE_SIZE);
 	}
 	return 0;
 }
@@ -3759,9 +3758,11 @@ int handle_pte_fault(struct mm_struct *mm,
 	entry = *pte;
 	if (!pte_present(entry)) {
 		if (pte_none(entry)) {
-			if (vma->vm_ops)
-				return do_linear_fault(mm, vma, address,
+			if (vma->vm_ops) {
+				if (likely(vma->vm_ops->fault))
+					return do_linear_fault(mm, vma, address,
 						pte, pmd, flags, entry);
+			}
 			return do_anonymous_page(mm, vma, address,
 						 pte, pmd, flags);
 		}
