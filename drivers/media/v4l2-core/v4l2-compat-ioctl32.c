@@ -336,6 +336,10 @@ static int get_v4l2_plane32(struct v4l2_plane *up, struct v4l2_plane32 *up32,
 
 	if (copy_in_user(up, up32, 2 * sizeof(__u32)) ||
 		copy_in_user(&up->data_offset, &up32->data_offset,
+				sizeof(__u32)) ||
+		copy_in_user(up->reserved, up32->reserved,
+				sizeof(up->reserved)) ||
+		copy_in_user(&up->length, &up32->length,
 				sizeof(__u32)))
 		return -EFAULT;
 
@@ -361,6 +365,8 @@ static int put_v4l2_plane32(struct v4l2_plane *up, struct v4l2_plane32 *up32,
 				enum v4l2_memory memory)
 {
 	if (copy_in_user(up32, up, 2 * sizeof(__u32)) ||
+		copy_in_user(up32->reserved, up->reserved,
+				sizeof(up32->reserved)) ||
 		copy_in_user(&up32->data_offset, &up->data_offset,
 				sizeof(__u32)))
 		return -EFAULT;
@@ -393,7 +399,7 @@ static int get_v4l2_buffer32(struct v4l2_buffer *kp, struct v4l2_buffer32 __user
 		get_user(kp->type, &up->type) ||
 		get_user(kp->flags, &up->flags) ||
 		get_user(kp->memory, &up->memory) ||
-		get_user(kp->reserved, &up->reserved))
+		get_user(kp->length, &up->length))
 			return -EFAULT;
 
 	if (V4L2_TYPE_IS_OUTPUT(kp->type))
@@ -401,11 +407,18 @@ static int get_v4l2_buffer32(struct v4l2_buffer *kp, struct v4l2_buffer32 __user
 			get_user(kp->field, &up->field) ||
 			get_user(kp->timestamp.tv_sec, &up->timestamp.tv_sec) ||
 			get_user(kp->timestamp.tv_usec,
-					&up->timestamp.tv_usec)	||
-			copy_from_user(&kp->timecode, &up->timecode, sizeof(struct v4l2_timecode)) ||
-			get_user(kp->sequence, &up->sequence) ||
-			get_user(kp->reserved2, &up->reserved2))
+					&up->timestamp.tv_usec))
 			return -EFAULT;
+
+	if (V4L2_TYPE_IS_PRIVATE(kp->type)) {
+		compat_long_t tmp;
+
+		if (get_user(kp->length, &up->length) ||
+				get_user(tmp, &up->m.userptr))
+			return -EFAULT;
+
+		kp->m.userptr = (unsigned long)compat_ptr(tmp);
+	}
 
 	if (V4L2_TYPE_IS_MULTIPLANAR(kp->type)) {
 		if (get_user(kp->length, &up->length))
@@ -443,16 +456,14 @@ static int get_v4l2_buffer32(struct v4l2_buffer *kp, struct v4l2_buffer32 __user
 	} else {
 		switch (kp->memory) {
 		case V4L2_MEMORY_MMAP:
-			if (get_user(kp->length, &up->length) ||
-				get_user(kp->m.offset, &up->m.offset))
+			if (get_user(kp->m.offset, &up->m.offset))
 				return -EFAULT;
 			break;
 		case V4L2_MEMORY_USERPTR:
 			{
 			compat_long_t tmp;
 
-			if (get_user(kp->length, &up->length) ||
-			    get_user(tmp, &up->m.userptr))
+			if (get_user(tmp, &up->m.userptr))
 				return -EFAULT;
 
 			kp->m.userptr = (unsigned long)compat_ptr(tmp);
@@ -494,8 +505,15 @@ static int put_v4l2_buffer32(struct v4l2_buffer *kp, struct v4l2_buffer32 __user
 		copy_to_user(&up->timecode, &kp->timecode, sizeof(struct v4l2_timecode)) ||
 		put_user(kp->sequence, &up->sequence) ||
 		put_user(kp->reserved2, &up->reserved2) ||
-		put_user(kp->reserved, &up->reserved))
+		put_user(kp->reserved, &up->reserved) ||
+		put_user(kp->length, &up->length))
 			return -EFAULT;
+
+	if (V4L2_TYPE_IS_PRIVATE(kp->type)) {
+		if (put_user(kp->length, &up->length) ||
+				put_user(kp->m.userptr, &up->m.userptr))
+			return -EFAULT;
+	}
 
 	if (V4L2_TYPE_IS_MULTIPLANAR(kp->type)) {
 		num_planes = kp->length;
@@ -517,13 +535,11 @@ static int put_v4l2_buffer32(struct v4l2_buffer *kp, struct v4l2_buffer32 __user
 	} else {
 		switch (kp->memory) {
 		case V4L2_MEMORY_MMAP:
-			if (put_user(kp->length, &up->length) ||
-				put_user(kp->m.offset, &up->m.offset))
+			if (put_user(kp->m.offset, &up->m.offset))
 				return -EFAULT;
 			break;
 		case V4L2_MEMORY_USERPTR:
-			if (put_user(kp->length, &up->length) ||
-				put_user(kp->m.userptr, &up->m.userptr))
+			if (put_user(kp->m.userptr, &up->m.userptr))
 				return -EFAULT;
 			break;
 		case V4L2_MEMORY_OVERLAY:
@@ -723,6 +739,9 @@ static int put_v4l2_ext_controls32(struct v4l2_ext_controls *kp, struct v4l2_ext
 struct v4l2_event32 {
 	__u32				type;
 	union {
+		struct v4l2_event_vsync		vsync;
+		struct v4l2_event_ctrl		ctrl;
+		struct v4l2_event_frame_sync	frame_sync;
 		compat_s64		value64;
 		__u8			data[64];
 	} u;
