@@ -20,6 +20,8 @@ CONFIG_SCHED_HMP_LITTLE_PACKING=y
 # Kernel hacking
 #
 CONFIG_DEBUG_INFO_REDUCED=y
+# CONFIG_SCHED_DEBUG is not set
+
 
 #
 # CD-ROM/DVD Filesystems
