@@ -4,16 +4,6 @@ SUBLEVEL = 104
 EXTRAVERSION =
 NAME = TOSSUG Baby Fish
 
-TOOLCHAIN_DIR = /home/builder/toolchains/5.3/bin/aarch64-linux-android-
-
-ifdef CONFIG_WITH_CCACHE
-ccache := ccache
-endif
-
-ifdef CONFIG_WITH_GRAPHITE
-GRAPHITE = -fgraphite-identity -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten -floop-nest-optimize -fgraphite
-endif
-
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
 # More info can be located in ./README
@@ -208,11 +198,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ \
 #ARCH		?= $(SUBARCH)
 #CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
 ARCH		= arm64
-ifdef CONFIG_WITH_CCACHE
-CROSS_COMPILE = $(CCACHE) $(TOOLCHAIN_DIR)
-else
-CROSS_COMPILE = $(TOOLCHAIN_DIR)
-endif
+CROSS_COMPILE	?= /home/builder/toolchains/6.0/bin/aarch64-linux-android-
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
@@ -258,20 +244,10 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-ifdef CONFIG_WITH_CCACHE
-HOSTCC       = $(CCACHE) gcc
-HOSTCXX      = $(CCACHE) g++
-else
 HOSTCC       = gcc
 HOSTCXX      = g++
-endif
-ifdef CONFIG_WITH_GRAPHITE
-HOSTCFLAGS   = $(GRAPHITE) -Wall -Wmissing-prototypes -Wstrict-prototypes -Ofast -fomit-frame-pointer -std=gnu89 -floop-nest-optimize
-HOSTCXXFLAGS = $(GRAPHITE) -Ofast
-else
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Ofast -fomit-frame-pointer -std=gnu89 -floop-nest-optimize
-HOSTCXXFLAGS = -Ofast
-endif
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer
+HOSTCXXFLAGS = -O2
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -355,24 +331,8 @@ include $(srctree)/scripts/Kbuild.include
 
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
-ifdef CONFIG_WITH_CCACHE
-	ifdef CONFIG_WITH_GRAPHITE
-		CC		= $(CCACHE) $(GRAPHITE) $(CROSS_COMPILE)gcc
-	else
-		CC		= $(CCACHE) $(CROSS_COMPILE)gcc
-	endif
-else
-	ifdef CONFIG_WITH_GRAPHITE
-		CC		= $(GRAPHITE) $(CROSS_COMPILE)gcc
-	else
-		CC		= $(CROSS_COMPILE)gcc
-	endif
-endif
-ifdef CONFIG_WITH_GRAPHITE
-CPP		= $(GRAPHITE) $(CC) -E
-else
+CC		= $(CROSS_COMPILE)gcc
 CPP		= $(CC) -E
-endif
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
 STRIP		= $(CROSS_COMPILE)strip
@@ -397,19 +357,11 @@ endif
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-ifdef CONFIG_WITH_GRAPHITE
-CFLAGS_MODULE   = $(GRAPHITE)
-AFLAGS_MODULE   = $(GRAPHITE)
-LDFLAGS_MODULE  = $(GRAPHITE)
-CFLAGS_KERNEL	= $(GRAPHITE) -fsingle-precision-constant
-AFLAGS_KERNEL	= $(GRAPHITE)
-else
 CFLAGS_MODULE   =
 AFLAGS_MODULE   =
 LDFLAGS_MODULE  =
-CFLAGS_KERNEL	= -fsingle-precision-constant
+CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
-endif
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -432,41 +384,42 @@ LINUXINCLUDE    := \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-ifdef CONFIG_WITH_GRAPHITE
-KBUILD_CFLAGS   := -DNDEBUG $(GRAPHITE) -w -Wstrict-prototypes -Wno-trigraphs \
-		   -fno-strict-aliasing -finline-functions -fno-common \
-		   -Werror-implicit-function-declaration -fno-pic \
-		   -Wno-format-security -ffast-math \
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+		   -fno-strict-aliasing -fno-common \
+		   -Werror-implicit-function-declaration \
+		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -fdiagnostics-show-option \
-		   -pipe  -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
-		   -ftree-loop-distribution -ftree-loop-if-convert -fivopts -fipa-pta -fira-hoist-pressure \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-		   -fbranch-target-load-optimize -fsingle-precision-constant \
-		   -Werror -Wno-error=unused-variable -Wno-error=unused-function \
-		   -std=gnu89 -Wno-discarded-array-qualifiers -Wno-logical-not-parentheses -Wno-array-bounds -Wno-switch -Wno-unused-variable \
-		   -march=armv8-a+crc -mtune=cortex-a57.cortex-a53
-else
-KBUILD_CFLAGS   := -DNDEBUG -w -Wstrict-prototypes -Wno-trigraphs \
-		   -fno-strict-aliasing -finline-functions -fno-common \
-		   -Werror-implicit-function-declaration -fno-pic \
-		   -Wno-format-security -ffast-math \
-		   -fno-delete-null-pointer-checks \
-		   -fdiagnostics-show-option \
-		   -pipe  -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
-		   -ftree-loop-distribution -ftree-loop-if-convert -fivopts -fipa-pta -fira-hoist-pressure \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-		   -fbranch-target-load-optimize -fsingle-precision-constant \
-		   -Werror -Wno-error=unused-variable -Wno-error=unused-function \
-		   -std=gnu89 -Wno-discarded-array-qualifiers -Wno-logical-not-parentheses -Wno-array-bounds -Wno-switch -Wno-unused-variable \
-		   -march=armv8-a+crc -mtune=cortex-a57.cortex-a53
-endif
+		   -fdiagnostics-show-option -Werror \
+			 -Wno-discarded-array-qualifiers \
+			 -Wno-logical-not-parentheses \
+			 -Wno-switch \
+			 -std=gnu89
+
+
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
+
+# GCC 6.0 Warnings
+KBUILD_CFLAGS		+= -Wno-error=unused-const-variable \
+									 -Wno-error=unused-function		\
+		   				 		 -Wno-error=unused-but-set-variable	\
+									 -Wno-error=unused-value \
+									 -Wno-error=unused-result	\
+									 -Wno-error=unused-local-typedefs \
+									 -Wno-error=unused-parameter \
+									 -Wno-error=unused-but-set-parameter \
+									 -Wno-error=unused-variable \
+									 -Wno-maybe-uninitialized
+
+# GCC 6.0 Errors
+KBUILD_CFLAGS	  += -Wno-error=tautological-compare \
+									 -Wno-error=misleading-indentation \
+									 -Wno-error=overflow \
+									 -Wno-error=array-bounds
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
