@@ -396,10 +396,12 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 		   -fdiagnostics-show-option -Werror \
-			 -Wno-discarded-array-qualifiers \
-			 -Wno-logical-not-parentheses \
-			 -Wno-switch \
-			 -std=gnu89
+		   -Wno-discarded-array-qualifiers \
+		   -Wno-logical-not-parentheses \
+		   -Wno-switch \
+		   -std=gnu89 \
+		   $(KERNEL_FLAGS)
+
 
 
 KBUILD_AFLAGS_KERNEL :=
