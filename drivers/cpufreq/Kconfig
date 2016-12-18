@@ -487,6 +487,15 @@ depends on X86
 source "drivers/cpufreq/Kconfig.x86"
 endmenu
 
+config S6_LOW_IDLE
+	bool "Galaxy S6 Low Idle Speed"
+	depends on SOC_EXYNOS7420
+	default y
+	help
+	  Enable lower speed idle clocks on 7420 System
+	  Sets Apollo to 200Mhz minimum
+	  Sets Atlas to 400MHz minimum
+
 menu "ARM CPU frequency scaling drivers"
 depends on ARM || ARM64
 source "drivers/cpufreq/Kconfig.arm"

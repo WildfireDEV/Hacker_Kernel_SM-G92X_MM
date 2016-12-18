@@ -183,6 +183,34 @@ static int exynos7420_region_bus_table_CA57[CPUFREQ_LEVEL_END_CA57][6] = {
 	{ 0,       0,       0,       0,       0,       0 },		/* 200 MHz */
 };
 #else
+#ifdef CONFIG_S6_LOW_IDLE
+static int exynos7420_bus_table_CA57[CPUFREQ_LEVEL_END_CA57] = {
+	1552000,		/* 2.5 GHz */
+	1552000,		/* 2.4 GHz */
+	1552000,		/* 2.3 GHz */
+	1552000,		/* 2.2 GHz */
+	1552000,		/* 2.1 GHz */
+	1456000,		/* 2.0 GHz */
+	1264000,		/* 1.9 GHz */
+	1264000,		/* 1.8 GHz */
+	1026000,		/* 1.7 MHz */
+	1026000,		/* 1.6 GHz */
+	 828000,		/* 1.5 GHz */
+	 828000,		/* 1.4 GHz */
+	 632000,		/* 1.3 GHz */
+	 632000,		/* 1.2 GHz */
+	 543000,		/* 1.1 GHz */
+	 543000,		/* 1.0 GHz */
+	 416000,		/* 900 MHz */
+	 416000,		/* 800 MHz */
+	 416000,		/* 700 MHz */
+	 416000,		/* 600 MHz */
+	 416000,		/* 500 MHz */
+	      0,		/* 400 MHz */
+	      0,		/* 300 MHz */
+	      0,		/* 200 MHz */
+};
+#else
 static int exynos7420_bus_table_CA57[CPUFREQ_LEVEL_END_CA57] = {
 	1552000,		/* 2.5 GHz */
 	1552000,		/* 2.4 GHz */
@@ -210,7 +238,7 @@ static int exynos7420_bus_table_CA57[CPUFREQ_LEVEL_END_CA57] = {
 	      0,		/* 200 MHz */
 };
 #endif
-
+#endif
 static int exynos7420_cpufreq_smpl_warn_notifier_call(
 					struct notifier_block *notifer,
 					unsigned long event, void *v)
@@ -391,8 +419,11 @@ static void __init set_volt_table_CA57(void)
 	max_support_idx_CA57 = L13;	/* 1.2 GHz */
 #endif
 
-	min_support_idx_CA57 = EXYNOS7420_CPU_MIN_FREQ_BIG;	
-
+#ifdef CONFIG_S6_LOW_IDLE
+	min_support_idx_CA57 = L21;	/* 400 MHz */
+#else
+ 	min_support_idx_CA57 = EXYNOS7420_CPU_MAX_FREQ_BIG;
+#endif
 	pr_info("CPUFREQ of CA57 max_freq : L%d %u khz\n", max_support_idx_CA57,
 		exynos7420_freq_table_CA57[max_support_idx_CA57].frequency);
 	pr_info("CPUFREQ of CA57 min_freq : L%d %u khz\n", min_support_idx_CA57,

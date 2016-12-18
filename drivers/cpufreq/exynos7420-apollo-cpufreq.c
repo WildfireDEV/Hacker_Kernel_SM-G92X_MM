@@ -142,6 +142,29 @@ static int exynos7420_region_bus_table_CA53[CPUFREQ_LEVEL_END_CA53][6] = {
 	{ 0,  100000,  133000,  276000,  416000,  543000 },		/* 200 MHz */
 };
 #else
+#ifdef CONFIG_S6_LOW_IDLE
+static int exynos7420_bus_table_CA53[CPUFREQ_LEVEL_END_CA53] = {
+	1026000,		/* 2.0 GHz */
+	1026000,		/* 1.9 GHz */
+	1026000,		/* 1.8 GHz */
+	1026000,		/* 1.7 GHz */
+	1026000,		/* 1.6 GHz */
+	1026000,		/* 1.5 GHz */
+	1026000,		/* 1.4 GHz */
+	1026000,		/* 1.3 GHz */
+	 828000,		/* 1.2 GHz */
+	 828000,		/* 1.1 GHz */
+	 632000,		/* 1.0 GHz */
+	 632000,		/* 900 MHz */
+	 543000,		/* 800 MHz */
+	 543000,		/* 700 MHz */
+	 416000,		/* 600 MHz */
+	 416000,		/* 500 MHz */
+	 416000,		/* 400 MHz */
+	 416000,		/* 300 MHz */
+	      0,		/* 200 MHz */
+};
+#else
 static int exynos7420_bus_table_CA53[CPUFREQ_LEVEL_END_CA53] = {
 	1026000,		/* 2.0 GHz */
 	1026000,		/* 1.9 GHz */
@@ -164,7 +187,7 @@ static int exynos7420_bus_table_CA53[CPUFREQ_LEVEL_END_CA53] = {
 	      0,		/* 200 MHz */
 };
 #endif
-
+#endif
 static void exynos7420_set_clkdiv_CA53(unsigned int div_index)
 {
 	unsigned int tmp, tmp1;
@@ -305,8 +328,11 @@ static void __init set_volt_table_CA53(void)
 		max_support_idx_CA53 = EXYNOS7420_CPU_MAX_FREQ_LITTLE;
 	}
 
-	min_support_idx_CA53 = EXYNOS7420_CPU_MIN_FREQ_LITTLE;
-
+#ifdef CONFIG_S6_LOW_IDLE
+	min_support_idx_CA53 = L18;	/* 200MHz */
+#else
+ 	min_support_idx_CA53 = EXYNOS7420_CPU_MAX_FREQ_LITTLE;
+#endif
 	pr_info("CPUFREQ of CA53 max_freq : L%d %u khz\n", max_support_idx_CA53,
 		exynos7420_freq_table_CA53[max_support_idx_CA53].frequency);
 	pr_info("CPUFREQ of CA53 min_freq : L%d %u khz\n", min_support_idx_CA53,
