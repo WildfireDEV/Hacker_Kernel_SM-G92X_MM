@@ -398,8 +398,14 @@ endif
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 ifdef CONFIG_WITH_GRAPHITE
-CFLAGS_MODULE   = $(GRAPHITE)
-AFLAGS_MODULE   = $(GRAPHITE)
+KERNEL_FLAGS	= -munaligned-access \
+		  -fgcse-after-reload -fgcse-sm \
+		  -fgcse-las -ftree-loop-im -ftree-loop-ivcanon -fweb \
+		  -frename-registers -ftree-loop-linear -ftree-vectorize \
+		  -fmodulo-sched -ffast-math \
+		  -funsafe-math-optimizations
+CFLAGS_MODULE   = $(GRAPHITE) -DMODULE $(KERNEL_FLAGS)
+AFLAGS_MODULE   = $(GRAPHITE) -DMODULE $(KERNEL_FLAGS)
 LDFLAGS_MODULE  = $(GRAPHITE)
 CFLAGS_KERNEL	= $(GRAPHITE) -fsingle-precision-constant
 AFLAGS_KERNEL	= $(GRAPHITE)
