@@ -1,3 +1,7 @@
+#
+# Automatically generated file; DO NOT EDIT.
+# Linux/arm64 3.10.104 Kernel Configuration
+#
 CONFIG_EXPERIMENTAL=y
 # CONFIG_LOCALVERSION_AUTO is not set
 # CONFIG_SWAP is not set
