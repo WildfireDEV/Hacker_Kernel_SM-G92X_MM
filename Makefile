@@ -5,7 +5,7 @@ EXTRAVERSION =
 NAME = TOSSUG Baby Fish
 
 #TOOLCHAIN_DIR = $(CURDIR)/toolchain/UBERTC-aarch64-linux-android-5.3/bin/aarch64-linux-android-
-TOOLCHAIN_DIR = /home/kerneldev/android/toolchains/UBERTC-aarch64-linux-android-5.3/bin/aarch64-linux-android-
+TOOLCHAIN_DIR = /home/builder/toolchains/5.3/bin/aarch64-linux-android-
 
 ifdef CONFIG_WITH_CCACHE
 ccache := ccache
